@@ -29,6 +29,15 @@ public static class FairPackRules
     public const int RuleVersion = 2;
     public const string Standard = "STANDARD";
     public const string Legacy = "LEGACY";
+    // Classic 2014 (docs/classic-2014.md): a Classic save's one pack type, the Classic pack. Like the Violet Hold types it is
+    // named after its set; it opens the client's Classic booster (BoosterDbId 1, the Legacy booster's art).
+    public const string Classic = "VANILLA";
+    internal const int ClassicBoosterId = 1;
+    // The Classic pack pool (every collectible non-Basic VAN card) pinned like ManifestHash: SHA-256 of "id:RARITY\n" rows in
+    // ordinal id order. A different pool needs a new RuleVersion, never an edit of this hash.
+    public const string ClassicPoolHash = "e2a1a31ce53cab48ef1c8c2d14c9527bcd126710eb6f486a4b97a6f76c85c203";
+    // The pack a reward or gift of "packs" grants: Standard packs in Violet Hold, Classic packs in a Classic save.
+    public static string MainPackType => ActiveSaveMeta.IsClassic ? Classic : Standard;
     // Pack rolls are deterministic and a pending pack is re-generated from its seed and sequence when a profile is validated,
     // so the data behind a rule version must never change silently. ManifestHash pins the embedded eligibility file;
     // SignatureHashV2 pins the set of Signature-capable cards that rule 2 draws from. If either has to change, add a new
@@ -41,8 +50,10 @@ public static class FairPackRules
     internal const int WeightTotal = 1000000000;
     internal const int GoldenCommonWeight = 15000000, GoldenRareWeight = 20000000,
         GoldenEpicWeight = 50000000, GoldenLegendaryWeight = 120000000, SignatureWeight = 166666667;
-    private static readonly Lazy<PackCatalogue> Catalogue = new Lazy<PackCatalogue>(() => {
+    // One catalogue per save meta: a Classic save's catalogue holds the Classic pack alone.
+    private static readonly MetaLazy<PackCatalogue> Catalogue = new MetaLazy<PackCatalogue>(() => {
 #if ENGINE_SOURCE
+        if (ActiveSaveMeta.IsClassic) return LoadClassicCatalogue();
         var policy = OfflinePoolPolicy.Load();
         return LoadCatalogue(policy.ActiveMetaId, policy.PackEligibleSets, policy.NewestSet);
 #else
@@ -217,6 +228,26 @@ public static class FairPackRules
             return BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
     }
 
+#if ENGINE_SOURCE
+    // The Classic pack pool, in ordinal id order: every collectible, implemented VAN card except the Basic (FREE) ones.
+    internal static IReadOnlyList<EngineCard> ClassicPackCards() => Array.AsReadOnly(Cards.Classic
+        .Where(LocalCardCatalog.IsClassicPackCard).OrderBy(card => card.Id, StringComparer.Ordinal).ToArray());
+    internal static string ClassicPoolDigest(IEnumerable<EngineCard> cards) => Hash(Encoding.UTF8.GetBytes(string.Concat(
+        cards.OrderBy(card => card.Id, StringComparer.Ordinal).Select(card => card.Id + ":" + card.Rarity + "\n"))));
+    internal static PackCatalogue LoadClassicCatalogue()
+    {
+        LocalCardPremium.Validate();
+        var cards = ClassicPackCards();
+        string digest = ClassicPoolDigest(cards);
+        if (digest != ClassicPoolHash) throw new InvalidOperationException("Classic pack pool hash mismatch: " + digest + " (" + cards.Count + " cards).");
+        var types = Array.AsReadOnly(new[] { Classic });
+        var pools = new Dictionary<string, Pool>(StringComparer.Ordinal) { [Classic] = new Pool(cards) };
+        var boosters = new Dictionary<string, object>(StringComparer.Ordinal) { [Classic] = (long)ClassicBoosterId };
+        string canonicalMeta = ActiveSaveMeta.Classic + "\n" + Classic + "\n" + Classic + "\n";
+        return new PackCatalogue(types, Classic, Hash(Encoding.UTF8.GetBytes(canonicalMeta)), pools, boosters);
+    }
+#endif
+
     internal static PackCatalogue LoadCatalogue(string metaId, IEnumerable<string> activeSets, string newestSet)
     {
         LocalCardPremium.Validate();
@@ -316,10 +347,12 @@ internal static class LocalCardPremium
     private static bool Supports(string id, string quality, string meta)
     {
 #if ENGINE_SOURCE
-        meta = meta ?? OfflinePoolPolicy.Load().ActiveMetaId;
+        meta = meta ?? (ActiveSaveMeta.IsClassic ? ActiveSaveMeta.Classic : OfflinePoolPolicy.Load().ActiveMetaId);
 #else
-        meta = meta ?? "violet-hold";
+        meta = meta ?? ActiveSaveMeta.Current;
 #endif
+        // Classic 2014 has only normal and golden cards: no Signature or Diamond version exists (docs/classic-2014.md).
+        if (meta == ActiveSaveMeta.Classic) return false;
         if (!Metas.TryGetValue(meta, out var row)) throw new InvalidDataException("Unknown mastery meta.");
         return row[quality].Contains(id);
     }

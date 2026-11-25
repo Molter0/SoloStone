@@ -21,6 +21,8 @@ internal static class SelectedProfile
 #else
         if (launch.SnapshotId != null) throw new InvalidOperationException("Normal build rejects snapshot profile");
         ProfileOptions options = ProfileCatalog.OptionsForProfile(launch.RootProfilePath, profilePath);
+        // Classic 2014: the opened save's meta is the process's meta from here on, before any catalog is read for it.
+        ActiveSaveMeta.Set(options.MetaId);
 #if !SOLOSTONE_INSTALLER || SOLOSTONE_TEST_HOOKS
         LocalProfileBackups.ProcessRestoreRequest(profilePath, options);
 #endif

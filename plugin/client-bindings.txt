@@ -762,6 +762,7 @@ M	*	UberText	GetLocalizedFont	()
 M	*	UberText	GetTextBounds	()
 M	*	UberText	UpdateNow	(System.Boolean)
 M	*	iTween	Count	(UnityEngine.GameObject)
+M	Assembly-CSharp	AbsDeckPickerTrayDisplay	SetHeaderText	System.Void(System.String)
 M	Assembly-CSharp	AchieveManager	Get	AchieveManager()
 M	Assembly-CSharp	AchieveManager	IsReady	*
 M	Assembly-CSharp	AchieveManager	IsReady	System.Boolean()
@@ -1780,6 +1781,11 @@ M	Assembly-CSharp	HearthstoneTelemetry.TelemetryClient	SendShopStatus	*
 M	Assembly-CSharp	HearthstoneTelemetry.TelemetryClient	SendShopVisit	*
 M	Assembly-CSharp	HeraldCardTextBuilder	GetHeraldColossalName	(Entity)
 M	Assembly-CSharp	HeraldCardTextBuilder	GetHeraldColossalName	*
+M	Assembly-CSharp	HeroPickerButton	IsLocked	*
+M	Assembly-CSharp	HeroPickerButton	Lock	*
+M	Assembly-CSharp	HeroPickerButton	SetLockReasonText	*
+M	Assembly-CSharp	HeroPickerButton	UpdateDisplay	*
+M	Assembly-CSharp	HeroPickerButton	get_HeroCardDbId	*
 M	Assembly-CSharp	HeroSkinInfoManager	Get	HeroSkinInfoManager()
 M	Assembly-CSharp	HeroSkinUtils	GetCollectionManagerHeroSkinPurchaseProductData	(System.String)
 M	Assembly-CSharp	HeroSkinUtils+HeroSkinProductData	set_CurrencyType	System.Void(Assets.CardHero+PortraitCurrency)

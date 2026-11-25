@@ -103,6 +103,7 @@ namespace SabberStoneCore.Actions
 			=> delegate (Controller c, Minion minion)
 			{
                 var fromZone = minion.Zone?.Type ?? Zone.INVALID;
+                Kettle.PowerHistory.NameSelected(minion); // a selected bounce names its victim first
                 DarkGifts.RemoveForBackwardMove(minion, fromZone, Zone.HAND);
 				if (!RemoveFromZone.Invoke(c, minion))
 					return false;
@@ -352,6 +353,7 @@ namespace SabberStoneCore.Actions
 			{
 				if (oldMinion?.Zone?.Type != Zone.PLAY || card.Type == CardType.LOCATION)
 					return false;
+                Kettle.PowerHistory.NameSelected(oldMinion); // a selected transform (Tinkmaster Overspark) names its victim first
 
 				TransformRules.Intercept(oldMinion, card, out card);
                 if (card == null) return false;
@@ -389,6 +391,7 @@ namespace SabberStoneCore.Actions
             using var statGain = StatGainRules.Begin(target, creator, enchantmentCard);
             // A fair-view simulation cannot see a hidden card, so its buff is unknowable (e.g. draw-then-buff).
             if (target is Unknown && g.HistoryFacts.IsProjected) return;
+            Kettle.PowerHistory.NameSelected(target); // a selected buff (Master Swordsmith, Young Priestess) names its recipient first
             // Location combat/stat auras are unsupported; trigger and Deathrattle attachments are valid.
             if (target is BoardObject location && (power.Aura != null || power.Enchant != null &&
                 !(location.Zone == location.Controller.HandZone && Array.TrueForAll(power.Enchant.Effects,
@@ -447,6 +450,7 @@ namespace SabberStoneCore.Actions
         internal static IPlayable ChangeEntity(Controller c, IPlayable p, Card newCard, bool removeEnchantments,
             Minion dormantCopy = null, bool resetHeldState = false, bool intercept = true)
 			{
+                if (p is Minion { Zone: { Type: Zone.PLAY } }) Kettle.PowerHistory.NameSelected(p); // a selected transform in play
                 if (intercept) TransformRules.Intercept(p as Minion, newCard, out newCard);
                 if (newCard == null) return p;
                 // Aya also replaces Coins made in place; resolve before publishing CHANGE_ENTITY.

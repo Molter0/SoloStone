@@ -10,7 +10,7 @@
     <Compile Include="../../plugin/LocalBot.cs" Link="LocalBot.cs" />
     <Compile Include="../../plugin/LocalDecks.cs" Link="LocalDecks.cs" />
     <Compile Include="../../plugin/LocalDeckCards.cs" Link="LocalDeckCards.cs" />
-    <Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" />
+    <Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" /><Compile Include="../../plugin/ActiveSaveMeta.cs" Link="ActiveSaveMeta.cs" />
     <ProjectReference Include="../../engine/SabberStoneCore/SabberStoneCore.csproj" />
   </ItemGroup>
   <PropertyGroup><EngineSource>true</EngineSource><DefineConstants>$(DefineConstants);ENGINE_SOURCE</DefineConstants></PropertyGroup>

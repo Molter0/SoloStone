@@ -807,7 +807,8 @@ public sealed class NativeMatch
             Player2HeroClass = botHero.Class,
             Player2HeroCard = botHero,
             Player2Deck = botCards,
-            FormatType = FormatType.FT_WILD,
+            // Classic 2014: a Classic save plays FT_CLASSIC with the classic random pool (ActiveMatchFormat).
+            FormatType = ActiveMatchFormat.Format,
             StartPlayer = firstPlayer,
             Shuffle = true,
             RandomSeed = seed,
@@ -817,7 +818,7 @@ public sealed class NativeMatch
             EnableCorpses = true,
             // The live match is FT_WILD (the client shows the format), but random effects play the Standard pool.
             // The pool policy is set explicitly; the Wild mode will set it from the deck's format.
-            PoolFormat = SabberStoneCore.Config.GenerationFormat.Standard,
+            PoolFormat = ActiveMatchFormat.Pool,
             Player1Sideboards = playerDeck?.Sideboards,
             Player2Sideboards = opponentDeck?.Sideboards,
 #endif

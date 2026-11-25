@@ -365,6 +365,8 @@ namespace SabberStoneCore.Kettle
             internal PowerHistoryBlockStart Start;
             internal readonly List<int> Targets = new List<int>();
             internal readonly HashSet<int> SelectedTargets = new HashSet<int>();
+            // Every id a TARGET of this block has named (Targets drops ids as their hits land; this does not).
+            internal readonly HashSet<int> Named = new HashSet<int>();
             internal readonly List<int> BurnedCards = new List<int>();
             internal bool HasEffects;
             internal bool Appendages;
@@ -445,6 +447,27 @@ namespace SabberStoneCore.Kettle
 
         private bool HealFollowsTarget(IEnumerable<int> healed) => CurrentBlock?.BlockType == BlockType.POWER
             && _blocks.Peek().DamageTargeted && !healed.Any(id => _blocks.Peek().Targets.Contains(id));
+
+        // A task-selected recipient (RandomTask, IncludeTask TARGET/EVENT_TARGET: SelectTargets) that an effect changes without
+        // damage: control, destroy, silence, transform, return to hand, freeze or an enchantment. Retail names each task-selected
+        // recipient of a power with a TARGET (native 4.5; retail O:2445, the rule HitTarget applies to damage), and the client
+        // plays the power's FX on the TARGET set: without one it plays it on every candidate of the card's spell (Sylvanas
+        // Windrunner's steal on every enemy minion, owner live test 2026-11-24). A recipient the block already named (a POWER's
+        // header target, an earlier hit) is not named again; fixed sets and AoE are never selected, so they stay unnamed.
+        internal void SelectedHitTarget(int victim)
+        {
+            if (!_enabled || _blocks.Count == 0) return;
+            var frame = _blocks.Peek();
+            if (!(frame.Start.BlockType == BlockType.POWER || frame.Start.BlockType == BlockType.TRIGGER)
+                || !frame.SelectedTargets.Contains(victim) || frame.Named.Contains(victim)) return;
+            TargetRange(new[] { victim }, resolved: true);
+        }
+
+        /// <summary>Names a task-selected recipient before a non-damage effect changes it (see SelectedHitTarget).</summary>
+        internal static void NameSelected(IEntity victim)
+        {
+            if (victim is ICharacter && victim.Game?.History == true) victim.Game.PowerHistory.SelectedHitTarget(victim.Id);
+        }
 
         internal void HitTarget(int victim)
         {
@@ -1105,6 +1128,7 @@ namespace SabberStoneCore.Kettle
                     {
                         frame.Targets.Clear();
                         frame.Targets.AddRange(meta.Info);
+                        frame.Named.UnionWith(meta.Info);
                         frame.HasEffects = false;
                         frame.Targeted = true;
                     }

@@ -28,6 +28,8 @@ public sealed class ArenaRequest
 public sealed class ArenaDeckCatalog
 {
     public const string ResourceName = "SoloStone.Npc.arena-decks-v1.json";
+    // Classic 2014 (docs/classic-2014.md): the Classic save's Arena decks, drafted under the Classic Arena rules (rulesVersion 2).
+    public const string ClassicResourceName = "SoloStone.Npc.arena-classic-decks-v1.json";
     public const string Admission = "arena";
     public const int BucketCount = 5;
     public NpcDeckLibrary Library { get; }
@@ -101,9 +103,12 @@ public sealed class ArenaQueueRules
     public double MiddleBucket { get; set; } = 2;
     public double BucketPerNetWin { get; set; } = 0.5;
     public double BucketSigma { get; set; } = 0.9;
-    // NPCs: the Casual opponent skill scale (an NPC plays at its own rating's tier); Arena has no rating of its own, so the
-    // field is centred on the middle of the ladder and never moves with the player's record or results.
-    public double NpcTargetRating { get; set; } = 1300;
+    // NPCs: the Casual opponent skill scale (an NPC plays at its own rating's tier). Arena has no rating of its own: the field
+    // is centred on NpcTargetRating at 0 wins and climbs NpcRatingPerWin per win of the run (owner 2026-11-24: more wins, harder
+    // opponents), so 0 wins meets mostly Regular pilots, 4 Skilled, 6 Expert, 8 Master and 9+ Elite. Losses do not lower it.
+    public double NpcTargetRating { get; set; } = 1250;
+    public double NpcRatingPerWin { get; set; } = 45;
+    public double NpcTargetFor(int wins) => NpcTargetRating + Math.Max(0, wins) * NpcRatingPerWin;
     public double NpcSigma { get; set; } = 150;
     public double NotableWeight { get; set; } = 1.5;
     public static ArenaQueueRules Default => new ArenaQueueRules();
@@ -164,9 +169,10 @@ public sealed class ArenaMatchmaker
         var npcs = World.All.Where(npc => !usedNpcs.Contains(npc.Id)).ToList();
         if (npcs.Count == 0) npcs = World.All.ToList();
         if (npcs.Count == 0) throw new InvalidOperationException("The NPC world has no Arena opponent.");
+        double npcTarget = Rules.NpcTargetFor(request.Wins);
         var npcWeights = npcs.Select(npc =>
         {
-            double z = (npc.HomeRating - Rules.NpcTargetRating) / Rules.NpcSigma;
+            double z = (npc.HomeRating - npcTarget) / Rules.NpcSigma;
             return Math.Exp(-0.5 * z * z) * (npc.Notable ? Rules.NotableWeight : 1);
         }).ToArray();
         var chosen = npcs[new MatchRng(seed, StreamNpc).Pick(npcWeights)];

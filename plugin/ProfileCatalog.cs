@@ -10,6 +10,8 @@ public sealed class ProfileSlot {
     public string Id; public string Name; public string CreatedUtc;
     // Listing-only health: a damaged slot is shown but cannot be opened; never persisted.
     [XmlIgnore] public string Unavailable;
+    // Listing-only: the save's meta (ActiveSaveMeta id) when its options read; never persisted.
+    [XmlIgnore] public string MetaId;
 }
 public sealed class ProfileCatalogData { public int Version = 1; public string SelectedId; public List<ProfileSlot> Slots = new List<ProfileSlot>(); }
 public sealed class ProfileOptions {
@@ -39,6 +41,8 @@ public sealed class ProfileSwitchRequest { public int Version; public string Run
 public sealed class ProfileSummary
 {
     public string Name, CreatedUtc, Rank; public bool Sandbox, HasPendingMatch, PendingUnknown, Readable; public int Gold, DeckCount;
+    // The save's meta (ActiveSaveMeta id); Violet Hold when its options cannot be read.
+    public string MetaId = ActiveSaveMeta.VioletHold;
 }
 // Outcome strings: deleted, move-deferred (slot gone, folder moved by the next reconcile), refused-pending/legacy/unknown/in-use/unreadable/current, failed:<reason>.
 public sealed class ProfileDeleteResult
@@ -101,8 +105,10 @@ public static class ProfileCatalog
     internal static Action<string> FaultHook;
     public const int MaximumSlots = 20, UnlimitedGold = 999999;
     public const long UnlimitedDust = 999999;
-    public const string MetaId = "violet-hold", MetaLabel = "Violet Hold — September 2026";
+    // The default meta of a new save; Classic 2014 is the other one (ActiveSaveMeta, docs/classic-2014.md).
+    public const string MetaId = ActiveSaveMeta.VioletHold, MetaLabel = ActiveSaveMeta.VioletHoldLabel;
     public const string BacklogTooltip = "Not done yet! In the backlog";
+    public const string MetaTooltip = "Classic — June 2014 plays the Basic and Classic cards as they were before Naxxramas, with its own collection, decks, gold, dust and rank. The meta cannot be changed after the save is created.";
     internal const string LegacyId = "legacy";
     private const string DeletedFolder = ".deleted";
     internal const int KeptDeleted = 5;
@@ -118,9 +124,15 @@ public static class ProfileCatalog
     public static IReadOnlyList<ProfileSlot> List(string legacy)
     {
         legacy = CanonicalLegacy(legacy);
-        return Load(legacy).Slots.Select(row => { var copy = Copy(row); copy.Unavailable = SlotProblem(legacy, row); return copy; }).ToArray();
+        return Load(legacy).Slots.Select(row => { var copy = Copy(row); copy.Unavailable = SlotProblem(legacy, row); copy.MetaId = SlotMeta(legacy, row); return copy; }).ToArray();
     }
     public static string SelectedId(string legacy) => Load(legacy).SelectedId;
+    private static string SlotMeta(string legacy, ProfileSlot slot)
+    {
+        if (slot.Id == LegacyId) return ActiveSaveMeta.VioletHold;
+        try { string path = SlotOptions(legacy, slot.Id); return File.Exists(path) ? ActiveSaveMeta.Normalize(ReadOptions(path).MetaId) : null; }
+        catch (Exception) { return null; }
+    }
 
     public static string ProfilePathForId(string legacy, string id)
     {
@@ -179,7 +191,7 @@ public static class ProfileCatalog
         legacy = CanonicalLegacy(legacy); name = ValidateName(name);
         // Copy: a failed in-game create must not leave a frozen rating in the wizard's live options.
         options = options?.Clone();
-        if (options != null && options.StartLegendOne && options.LegendRating == 0) options.LegendRating = LocalProfile.LegendOneCreationRating();
+        if (options != null && options.StartLegendOne && options.LegendRating == 0) options.LegendRating = LocalProfile.LegendOneCreationRating(ActiveSaveMeta.Normalize(options.MetaId));
         ValidateOptions(options); Directory.CreateDirectory(Root(legacy));
         using (Lease(legacy))
         {
@@ -192,8 +204,12 @@ public static class ProfileCatalog
             if (Directory.Exists(staging) || Directory.Exists(final)) throw new IOException("Save staging path already exists.");
             Directory.CreateDirectory(staging); WriteNew(OptionsXml, Path.Combine(staging, "profile-options.xml"), options);
             string path = Path.Combine(staging, "profile.xml");
-            using (var profile = new LocalProfile(path, options)) profile.PersistNewProfile(options);
-            using (var profile = new LocalProfile(path, options)) { }
+            // The new save is built and checked under its own meta, whatever the open save's meta is.
+            using (ActiveSaveMeta.Use(options.MetaId))
+            {
+                using (var profile = new LocalProfile(path, options)) profile.PersistNewProfile(options);
+                using (var profile = new LocalProfile(path, options)) { }
+            }
             Directory.Move(staging, final);
             var slot = new ProfileSlot { Id = id, Name = name, CreatedUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture) };
             catalog.Slots.Add(slot); if (recordIfFirst && catalog.SelectedId == null) catalog.SelectedId = id; Commit(legacy, catalog); return Copy(slot);
@@ -249,7 +265,7 @@ public static class ProfileCatalog
         ProfileOptions read = null;
         try { read = File.Exists(options) ? ReadOptions(options) : null; }
         catch (Exception) { }
-        if (read != null) { summary.Sandbox = read.IsSandbox(); if (read.InfiniteGold) summary.Gold = UnlimitedGold; }
+        if (read != null) { summary.Sandbox = read.IsSandbox(); summary.MetaId = ActiveSaveMeta.Normalize(read.MetaId); if (read.InfiniteGold) summary.Gold = UnlimitedGold; }
         summary.Readable = data != null && read != null && !summary.PendingUnknown;
         return summary;
     }
@@ -916,7 +932,7 @@ public static class ProfileCatalog
                 OnUnknownNode = (sender, e) => { if (e.NodeType != XmlNodeType.Whitespace) throw new InvalidOperationException("Unknown save metadata node."); }
             });
     }
-    private static void ValidateOptions(ProfileOptions value) { if (value == null || value.Version != 1 || value.MetaId != MetaId
+    private static void ValidateOptions(ProfileOptions value) { if (value == null || value.Version != 1 || !ActiveSaveMeta.IsKnown(value.MetaId)
         || value.GrindTier != null && !GrindTiers.IsKnown(value.GrindTier)
         || value.NpcDifficulty != null && !NpcDifficultyIds.IsSelectable(value.NpcDifficulty)
         || double.IsNaN(value.LegendRating) || double.IsInfinity(value.LegendRating)

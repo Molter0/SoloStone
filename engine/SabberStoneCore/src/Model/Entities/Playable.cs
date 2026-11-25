@@ -404,6 +404,7 @@ namespace SabberStoneCore.Model.Entities
 		public virtual void Destroy()
 		{
             if (Actions.DrawReplacementRules.DestroyOffboard(this)) return;
+            Kettle.PowerHistory.NameSelected(this); // a selected destroy (Deadly Shot) names its victim first
 			ToBeDestroyed = true;
 			Game.Log(LogLevel.VERBOSE, BlockType.PLAY, "Playable", !Game.Logging ? "" : $"{this} just got set to be destroyed.");
 			//return this;

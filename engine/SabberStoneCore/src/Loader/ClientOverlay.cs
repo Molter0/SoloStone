@@ -34,6 +34,8 @@ namespace SabberStoneCore.Loader
 		}
 
 		internal static readonly Document Data = CardFacts.Embedded.Overlay;
+		/// <summary>The classic-2014 rows (VAN_*). Same load rules as Data; their behaviour comes from Classic2014.</summary>
+		internal static readonly Document Classic = CardFacts.Classic.Overlay;
 
 		// The private XML, for the equality proof.
 		internal static Document Read(Stream stream)

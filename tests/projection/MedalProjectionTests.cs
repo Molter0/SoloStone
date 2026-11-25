@@ -76,7 +76,7 @@ internal static class MedalProjectionTests
     private static void Require(bool value, string message) { if (!value) throw new Exception(message); }
 }
 
-internal enum FormatType { FT_STANDARD, FT_WILD }
+internal enum FormatType { FT_STANDARD, FT_WILD, FT_CLASSIC }
 internal static class NetCache
 {
     internal sealed class NetCacheMedalInfo { internal readonly Dictionary<FormatType, PegasusUtil.MedalInfoData> MedalData = new(); }

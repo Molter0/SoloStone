@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace SabberStoneCore.Config
 {
 	/// <summary>Pool policy of a match for random generation.</summary>
-	public enum GenerationFormat { Standard, Wild }
+	public enum GenerationFormat { Standard, Wild, Classic }
 
 	/// <summary>
 	/// Holds all configuration values to create a new <see cref="Game"/> instance.

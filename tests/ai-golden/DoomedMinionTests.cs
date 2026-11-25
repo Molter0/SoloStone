@@ -74,13 +74,15 @@ public static class DoomedMinionTests
         Check(missed.Length == 0, "an enchantment the engine destroys its minion with is not detected: " + string.Join(",", missed));
         var wrong = detected.Except(died).ToArray();
         Check(wrong.Length == 0, "a detected enchantment that does not destroy its minion: " + string.Join(",", wrong));
-        foreach (var id in new[] { "EX1_316e", "UNG_831e", "DREAM_05e", "BOT_566e", "BOT_437e", "CS2_063e", "BE_553e", "DAL_607e", "DINO_417e" })
+        foreach (var id in new[] { "EX1_316e", "UNG_831e", "DREAM_05e", "BOT_566e", "BOT_437e", "CS2_063e", "BE_553e", "DAL_607e", "DINO_417e",
+            "VAN_DREAM_05e" }) // Ysera's 2014 Nightmare (docs/classic-2014.md)
             Check(detected.Contains(id), "known delayed destroy not detected: " + id);
-        Check(detected.Count == 9, "detected set: " + string.Join(",", detected.OrderBy(x => x)));
+        Check(detected.Count == 10, "detected set: " + string.Join(",", detected.OrderBy(x => x)));
         // Printed own-trigger minions: only a bare end-of-turn self-destroy (Frail Ghoul) qualifies; Doomsayer, Gurubashi
         // Offering and Alarm-o-Matic carry other payloads and stay out.
         var own = Cards.All.Where(c => c.Type == CardType.MINION && DoomedMinions.Dooms(c.Power?.Trigger, false)).Select(c => c.Id).ToArray();
-        Check(own.SequenceEqual(new[] { "HERO_11bpt" }), "printed self-destroy minions: " + string.Join(",", own));
+        // VAN_EX1_tk9b: the 2014 Force of Nature Treant, which dies at the end of the turn (docs/classic-2014.md).
+        Check(own.SequenceEqual(new[] { "HERO_11bpt", "VAN_EX1_tk9b" }), "printed self-destroy minions: " + string.Join(",", own));
     }
 
     public static void TestFlagsOnPublicState()

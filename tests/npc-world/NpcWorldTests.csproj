@@ -8,7 +8,7 @@
   <ItemGroup>
     <Compile Include="../../plugin/LocalDecks.cs" Link="LocalDecks.cs" />
     <Compile Include="../../plugin/LocalDeckCards.cs" Link="LocalDeckCards.cs" />
-    <Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" />
+    <Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" /><Compile Include="../../plugin/ActiveSaveMeta.cs" Link="ActiveSaveMeta.cs" />
     <Compile Include="../../plugin/FairBotState.cs" Link="FairBotState.cs" />
     <Compile Include="../../plugin/BotSearch.cs" Link="BotSearch.cs" />
     <Compile Include="../../plugin/BotDriver.cs" Link="BotDriver.cs" />

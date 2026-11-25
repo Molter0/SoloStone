@@ -259,10 +259,10 @@ internal static class LocalRewardPresentation
         if (match.PackReward)
         {
             string type = match.Packs?.FirstOrDefault()?.PackType;
-            if (type == FairPackRules.Standard) standardPacks = checked(standardPacks + 1);
+            if (type == FairPackRules.MainPackType) standardPacks = checked(standardPacks + 1);
             else items.Add(new LocalRewardItem(LocalRewardKind.Pack, 1, type));
         }
-        if (standardPacks > 0) items.Add(new LocalRewardItem(LocalRewardKind.Pack, standardPacks, FairPackRules.Standard));
+        if (standardPacks > 0) items.Add(new LocalRewardItem(LocalRewardKind.Pack, standardPacks, FairPackRules.MainPackType));
         if (dust > 0) items.Add(new LocalRewardItem(LocalRewardKind.Dust, dust));
 
         var baseRewards = new List<string>();

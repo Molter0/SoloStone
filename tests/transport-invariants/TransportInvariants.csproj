@@ -43,7 +43,7 @@
     <Compile Include="../../plugin/LocalProfileAchievements.cs" Link="LocalProfileAchievements.cs" />
     <Compile Include="../../plugin/LocalAchievementCollector.cs" Link="LocalAchievementCollector.cs" />
     <Compile Include="../../plugin/LocalProfileCheats.cs" />
-    <Compile Include="../../plugin/ProfileCatalog.cs" />
+    <Compile Include="../../plugin/ProfileCatalog.cs" /><Compile Include="../../plugin/ActiveSaveMeta.cs" />
     <Compile Include="../../plugin/OfflineGuard.cs" />
     <Compile Include="../../plugin/LocalClassRewards.cs" />
     <Compile Include="../../plugin/LocalLadder.cs" Link="LocalLadder.cs" />

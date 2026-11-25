@@ -16,7 +16,7 @@ public sealed class ArenaService : IArenaService
     public ArenaView View()
     {
         var run = profile.ArenaRun;
-        var rules = DraftRules.Arena(run?.RulesVersion ?? 1);
+        var rules = DraftRules.Arena(run?.RulesVersion ?? DraftRules.ActiveVersion);
         return new ArenaView {
             Phase = run?.Phase ?? ArenaPhase.None, RunId = run?.RunId, Wins = run?.Wins ?? 0, Losses = run?.Losses ?? 0,
             MaxWins = rules.MaxWins, MaxLosses = rules.MaxLosses, MaxSlot = rules.DeckSize,
@@ -49,7 +49,8 @@ public sealed class ArenaService : IArenaService
         if (profile.Pending != null) return Error("A match is pending.");
         if (profile.HasPendingRewardPresentation || profile.PackRevealPending) return Error("A reward presentation is pending.");
         if (!opponentsAvailable()) return Error("Arena opponents are unavailable.");
-        var rules = DraftRules.Arena();
+        // A Classic save starts Classic 2014 runs (docs/classic-2014.md); a Violet Hold save starts version 1.
+        var rules = DraftRules.Active;
         if (profile.Gold < rules.EntryGold) return Error("Arena costs " + rules.EntryGold + " gold. You have " + profile.Gold + " gold.");
         return Change(next => {
             if (next.ArenaEntryRequestIds.Count >= LocalProfile.MaximumArenaRequests) throw new InvalidOperationException("Arena entry receipt limit reached.");

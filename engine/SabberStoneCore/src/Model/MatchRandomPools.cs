@@ -30,6 +30,28 @@ namespace SabberStoneCore.Model.RandomPools
         internal static IReadOnlyList<OfflinePoolPolicy.Member> WildExtra(OfflinePoolManifest manifest) =>
             Array.Empty<OfflinePoolPolicy.Member>();
 
+        // The Classic format's pool: every classic-legal card (Cards.Classic), described as pool members so the
+        // class, race and keyword accessors work unchanged. No manifest member is ever VANILLA, so Standard and Wild
+        // never generate a classic card, and a Classic match never generates anything else.
+        internal static IReadOnlyList<OfflinePoolPolicy.Member> ClassicMembers => _classicMembers ?? (_classicMembers = Cards.Classic.Select(ClassicMember).ToArray());
+        private static IReadOnlyList<OfflinePoolPolicy.Member> _classicMembers;
+        private static OfflinePoolPolicy.Member ClassicMember(Card card)
+        {
+            var row = new System.Xml.Linq.XElement("Member",
+                new System.Xml.Linq.XAttribute("dbfId", card.AssetId), new System.Xml.Linq.XAttribute("cardId", card.Id),
+                new System.Xml.Linq.XAttribute("scope", "Classic"), new System.Xml.Linq.XAttribute("set", "VANILLA"),
+                new System.Xml.Linq.XAttribute("proofKey", "Classic2014:" + card.Id), new System.Xml.Linq.XAttribute("registrationKind", "classic"),
+                new System.Xml.Linq.XAttribute("type", card.Type.ToString()), new System.Xml.Linq.XAttribute("cost", card.Cost),
+                new System.Xml.Linq.XAttribute("attack", card.ATK), new System.Xml.Linq.XAttribute("health", card.Health),
+                new System.Xml.Linq.XAttribute("rarity", card.Rarity.ToString()), new System.Xml.Linq.XAttribute("spellSchool", "NONE"),
+                new System.Xml.Linq.XElement("Class", new System.Xml.Linq.XAttribute("name", OfflineCardPools.ClassName(card.Class))));
+            foreach (Race race in card.Races) row.Add(new System.Xml.Linq.XElement("Race", new System.Xml.Linq.XAttribute("name", race.ToString())));
+            foreach (var tag in card.Tags)
+                if (tag.Value != int.MinValue && (int)tag.Key > 0) row.Add(new System.Xml.Linq.XElement("Tag",
+                    new System.Xml.Linq.XAttribute("id", (int)tag.Key), new System.Xml.Linq.XAttribute("value", tag.Value)));
+            return new OfflinePoolPolicy.Member(row);
+        }
+
         private sealed class Slot { public readonly ConcurrentDictionary<(GenerationFormat, PoolDestination), MatchRandomPool> Pools =
             new ConcurrentDictionary<(GenerationFormat, PoolDestination), MatchRandomPool>(); }
         private static readonly ConditionalWeakTable<OfflinePoolManifest, Slot> PerManifest = new ConditionalWeakTable<OfflinePoolManifest, Slot>();
@@ -69,7 +91,7 @@ namespace SabberStoneCore.Model.RandomPools
             Format = format; Destination = destination; ManifestHash = manifest.Hash;
             var members = new List<OfflinePoolPolicy.Member>();
             var cards = new List<Card>();
-            IEnumerable<OfflinePoolPolicy.Member> source = manifest.Standard;
+            IEnumerable<OfflinePoolPolicy.Member> source = format == GenerationFormat.Classic ? ClassicMembers : manifest.Standard;
             if (format == GenerationFormat.Wild) source = source.Concat(WildExtra(manifest));
             foreach (var m in source)
             {
@@ -107,7 +129,7 @@ namespace SabberStoneCore.Model.RandomPools
             if (game == null) throw new ArgumentNullException(nameof(game));
             bool legacy = game.LegacyPoolReplay || game.UnversionedRandomPoolReplay;
             Census?.Invoke(source?.Card?.Id, legacy);
-            if (legacy) return game.FormatType == FormatType.FT_STANDARD ? LegacyStandard : LegacyWild;
+            if (legacy) return Cards.LegacyPoolFormat(game.FormatType) == FormatType.FT_STANDARD ? LegacyStandard : LegacyWild;
             var manifest = game.OfflinePools ?? OfflinePoolManifest.Installed;
             var slot = PerManifest.GetValue(manifest, _ => new Slot());
             return slot.Pools.GetOrAdd((game.PoolFormat, destination), key => new MatchRandomPool(manifest, key.Item1, key.Item2));

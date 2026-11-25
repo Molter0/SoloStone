@@ -5,7 +5,7 @@ using System;
 internal sealed class LocalProfile : IDisposable
 {
     internal LocalProfile(string path, ProfileOptions options) => throw new NotSupportedException("Save creation is outside the guard boundary test.");
-    internal static double LegendOneCreationRating() => throw new NotSupportedException("Save creation is outside the guard boundary test.");
+    internal static double LegendOneCreationRating(string meta = null) => throw new NotSupportedException("Save creation is outside the guard boundary test.");
     internal void PersistNewProfile(ProfileOptions options) => throw new NotSupportedException();
     // Save deletion (Describe) reads profiles through these; the guard never deletes.
     internal static LocalProfileData ReadFile(string path) => throw new NotSupportedException("Save summaries are outside the guard boundary test.");

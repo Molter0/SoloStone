@@ -204,6 +204,8 @@ namespace SabberStoneCore.Enums
 		BATTLEGROUNDS = 1453,
 		LEGACY = 1635,
 		CORE_MODERN = 1637,
+		/// <summary>The Classic format's cards (VAN_*): Basic and Classic as of June 2014 (facts/classic-2014.json).</summary>
+		VANILLA = 1646,
 		THE_LOST_CITY = 1952,
 		TIME_TRAVEL = 1957
 	}
@@ -324,7 +326,9 @@ namespace SabberStoneCore.Enums
 	{
 		FT_UNKNOWN = 0,
 		FT_WILD = 1,
-		FT_STANDARD = 2
+		FT_STANDARD = 2,
+		/// <summary>Retail's Classic format: only VANILLA cards (docs/classic-2014.md).</summary>
+		FT_CLASSIC = 3
 	}
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 

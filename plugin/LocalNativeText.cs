@@ -159,7 +159,9 @@ internal static class LocalNativeText
         {
             try
             {
-                if (card.Implemented && !result.ContainsKey(card.Id) && !KeepNativeText.Contains(card.Id)
+                // Classic 2014 (VAN) cards keep the client's own text: it is the 37.0 text the engine plays, localized,
+                // and no locale file has VAN rows, so an override would show English on a non-English client.
+                if (card.Implemented && card.Set != SabberStoneCore.Enums.CardSet.VANILLA && !result.ContainsKey(card.Id) && !KeepNativeText.Contains(card.Id)
                     && NativeMatch.TransportCardId(card.Id) == card.Id)
                 {
                     result[card.Id] = card.Text;
@@ -173,7 +175,7 @@ internal static class LocalNativeText
 
     private static void Add(Dictionary<string, string> result, EngineCard card)
     {
-        if (card == null) return;
+        if (card == null || card.Set == SabberStoneCore.Enums.CardSet.VANILLA) return;
         string native = NativeMatch.TransportCardId(card.Id);
         result[native] = card.Text;
         EngineIdByNativeId[native] = card.Id;

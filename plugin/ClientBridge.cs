@@ -250,6 +250,9 @@ internal static class ClientBridge
         LocalProfile profile = SelectedProfile.OpenStartup(launch, path, launch.AutoOpenTargetId != null);
         try
         {
+            // Classic 2014: the NPC world installed before the save was chosen; a save of another meta rebuilds it for its own.
+            try { NpcWorldBoot.EnsureForSaveMeta(message => log.LogInfo(message)); }
+            catch (Exception error) { log.LogError("npc-world reinstall for the save meta crashed: " + error); }
             if (profile.WelcomeSkipped != null) log.LogWarning("SAVE_WELCOME_SKIPPED missing profile.xml but " + profile.WelcomeSkipped + ": " + path);
             LocalLadder.Initialize(profile);
             DiagnosticProfilePath = path;

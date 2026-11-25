@@ -74,6 +74,7 @@ namespace SabberStoneCore.Loader
 			}
 			CardSets.Client.Reprints.Apply(Cards);
             CardSets.Client.RebalancedCore2026.Apply(Cards);
+            CardSets.Client.Classic2014.Apply(Cards);
             LegacyPoweredUpRules.Apply(Cards);
             CardIdentity.Build(Cards.Values, Cards);
 		}

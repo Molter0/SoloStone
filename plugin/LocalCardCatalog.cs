@@ -77,10 +77,34 @@ public static class LocalCardCatalog
     public static readonly IReadOnlyList<EngineCard> LegacyV4 = Resolve(LegacyV4IdManifest);
     public static readonly IReadOnlyList<EngineCard> Current = Resolve(CurrentIdManifest);
     public static readonly IReadOnlyList<EngineCard> Supported = Array.AsReadOnly(Current.Concat(LocalCoreProgression.AvailableCards).ToArray());
-    internal static bool InActiveMeta(EngineCard card)
+    // Classic 2014 (docs/classic-2014.md): in a Classic save every helper below answers for the Classic format. "In the meta"
+    // and "Standard" both mean a collectible, implemented VANILLA card; the pinned Violet Hold policy is not consulted.
+    internal static bool IsClassicCard(EngineCard card)
     {
 #if ENGINE_SOURCE
-        return OfflinePoolPolicy.Load().AllowsCard(card);
+        // The engine's own Classic legality (set 1646, collectible, implemented, no HERO card): one rule, not a copy.
+        return Cards.IsFormatLegal(card, SabberStoneCore.Enums.FormatType.FT_CLASSIC);
+#else
+        return false;
+#endif
+    }
+    internal static bool IsClassicSet(int setId)
+    {
+#if ENGINE_SOURCE
+        return setId == (int)CardSet.VANILLA;
+#else
+        return false;
+#endif
+    }
+    // Pack-eligible Classic cards: every Classic card but the Basic ones (FREE), which a Classic save owns from the start.
+    internal static bool IsClassicPackCard(EngineCard card) => IsClassicCard(card) && card.Rarity != Rarity.FREE;
+    internal static bool InActiveMeta(EngineCard card) => ActiveSaveMeta.IsClassic ? IsClassicCard(card) : InVioletHold(card);
+    // The installed Violet Hold policy alone, whatever the save meta: for static data that belongs to Violet Hold. The VAN
+    // cards belong to Classic saves only (the policy, which lists no VANILLA set, would otherwise admit them as a past set).
+    internal static bool InVioletHold(EngineCard card)
+    {
+#if ENGINE_SOURCE
+        return card != null && card.Set != CardSet.VANILLA && OfflinePoolPolicy.Load().AllowsCard(card);
 #else
         return card != null;
 #endif
@@ -89,6 +113,7 @@ public static class LocalCardCatalog
     // Wild. InActiveMeta stays wider: it also decides what the collection may hold and show.
     internal static bool IsStandard(EngineCard card)
     {
+        if (ActiveSaveMeta.IsClassic) return IsClassicCard(card);
 #if ENGINE_SOURCE
         return OfflinePoolPolicy.Load().IsStandard(card);
 #else
@@ -104,6 +129,7 @@ public static class LocalCardCatalog
     }
     internal static bool IsStandardSet(int setId)
     {
+        if (ActiveSaveMeta.IsClassic) return IsClassicSet(setId);
 #if ENGINE_SOURCE
         return OfflinePoolPolicy.Load().IsStandardSet(setId);
 #else
@@ -112,6 +138,7 @@ public static class LocalCardCatalog
     }
     internal static bool IsUnreleasedMetaSet(int setId)
     {
+        if (ActiveSaveMeta.IsClassic) return false;
 #if ENGINE_SOURCE
         return OfflinePoolPolicy.Load().IsUnreleasedMetaSet(setId);
 #else
@@ -122,12 +149,14 @@ public static class LocalCardCatalog
     internal static IReadOnlyList<string> NonStandardIds(IEnumerable<string> ids) =>
         Array.AsReadOnly((ids ?? Enumerable.Empty<string>()).Where(id => !IsStandardId(id)).Distinct(StringComparer.Ordinal).ToArray());
     // What V2 requires of a client: every collectible card a player or NPC can have in the active meta, and the pack pool.
+    // A Classic save's pool is the Classic cards alone (the legacy pack pool is Violet Hold history).
     internal static IReadOnlyList<string> ActivePoolIds() => Array.AsReadOnly(Cards.All
         .Where(card => card.Implemented && card.Collectible && InActiveMeta(card)).Select(card => card.Id)
-        .Concat(PackPool(CurrentPoolVersion).Select(card => card.Id))
+        .Concat(ActiveSaveMeta.IsClassic ? Enumerable.Empty<string>() : PackPool(CurrentPoolVersion).Select(card => card.Id))
         .Distinct(StringComparer.Ordinal).OrderBy(id => id, StringComparer.Ordinal).ToArray());
     internal static bool InActiveMetaSet(int setId)
     {
+        if (ActiveSaveMeta.IsClassic) return IsClassicSet(setId);
 #if ENGINE_SOURCE
         return OfflinePoolPolicy.Load().AllowsSet(setId);
 #else
@@ -135,10 +164,11 @@ public static class LocalCardCatalog
 #endif
     }
 #if ENGINE_SOURCE
-    public static IReadOnlyList<string> PackEligibleSets => OfflinePoolPolicy.Load().PackEligibleSets;
-    public static IReadOnlyList<string> ActiveMetaExtraCards => OfflinePoolPolicy.Load().ExtraCards;
-    public static string ActiveMetaNewestSet => OfflinePoolPolicy.Load().NewestSet;
-    public static bool InActiveMetaPack(EngineCard card) => OfflinePoolPolicy.Load().IsPackEligible(card);
+    private static readonly IReadOnlyList<string> ClassicPackSets = Array.AsReadOnly(new[] { "VANILLA" });
+    public static IReadOnlyList<string> PackEligibleSets => ActiveSaveMeta.IsClassic ? ClassicPackSets : OfflinePoolPolicy.Load().PackEligibleSets;
+    public static IReadOnlyList<string> ActiveMetaExtraCards => ActiveSaveMeta.IsClassic ? (IReadOnlyList<string>)Array.Empty<string>() : OfflinePoolPolicy.Load().ExtraCards;
+    public static string ActiveMetaNewestSet => ActiveSaveMeta.IsClassic ? "VANILLA" : OfflinePoolPolicy.Load().NewestSet;
+    public static bool InActiveMetaPack(EngineCard card) => ActiveSaveMeta.IsClassic ? IsClassicPackCard(card) : OfflinePoolPolicy.Load().IsPackEligible(card);
 #endif
     public static readonly IReadOnlyList<string> NewClassicIds = Array.AsReadOnly(Current
         .Where(card => card.Rarity != Rarity.FREE && LegacyV4.All(old => old.Id != card.Id))
@@ -548,4 +578,25 @@ internal static class LocalCoreProgression
             && (card.Hero.Length == 0 ? combined : Level(xp.TryGetValue(card.Hero, out int amount) ? amount : 0)) >= card.Threshold)
             .ToDictionary(card => card.Id, card => card.Copies, StringComparer.Ordinal);
     }
+}
+
+// A cache that depends on the save meta: one value per meta, each built the first time it is read under that meta, so a
+// cache built while one save is open never answers for a save of the other meta (ProfileCatalog.Create scopes the meta).
+internal sealed class MetaLazy<T>
+{
+    private readonly Lazy<T> violetHold, classic;
+    internal MetaLazy(Func<T> build) { violetHold = new Lazy<T>(build); classic = new Lazy<T>(build); }
+    internal T Value => ActiveSaveMeta.IsClassic ? classic.Value : violetHold.Value;
+}
+// Classic 2014 (docs/classic-2014.md): the engine format and random pool of a match in this save. Violet Hold matches stay
+// FT_WILD with the Standard pool; a Classic save's matches are FT_CLASSIC with the classic pool (GenerationFormat.Classic).
+internal static class ActiveMatchFormat
+{
+#if ENGINE_SOURCE
+    internal static FormatType Format => ActiveSaveMeta.IsClassic ? FormatType.FT_CLASSIC : FormatType.FT_WILD;
+    internal static SabberStoneCore.Config.GenerationFormat Pool => ActiveSaveMeta.IsClassic
+        ? SabberStoneCore.Config.GenerationFormat.Classic : SabberStoneCore.Config.GenerationFormat.Standard;
+#else
+    internal static FormatType Format => FormatType.FT_WILD;
+#endif
 }

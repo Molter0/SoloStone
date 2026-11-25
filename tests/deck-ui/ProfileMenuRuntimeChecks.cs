@@ -32,7 +32,7 @@ static partial class ProfileMenuRuntimeHarness
         internal static readonly List<string> TracePhases = new();
         internal static void TraceTooltip(string phase, PegUIElement row, TooltipZone zone) => TracePhases.Add(phase);
     }
-    private static class ProfileCatalog { internal const string BacklogTooltip = "Not done yet! In the backlog"; }
+    private static class ProfileCatalog { internal const string MetaTooltip = "Classic — June 2014 plays the Basic and Classic cards as they were before Naxxramas, with its own collection, decks, gold, dust and rank. The meta cannot be changed after the save is created."; }
     private sealed class TooltipZone
     {
         internal GameObject Clone;
@@ -195,7 +195,7 @@ static partial class ProfileMenuRuntimeHarness
                 meta.gameObject.layer = layer;
                 check(meta.Trigger(UIEventType.ROLLOVER) && meta.Tooltip.Clone != null
                     && meta.Tooltip.Clone.layer == layer && meta.Tooltip.Headline == "Meta"
-                    && meta.Tooltip.Body == ProfileCatalog.BacklogTooltip,
+                    && meta.Tooltip.Body == ProfileCatalog.MetaTooltip,
                     "production hover renders each new tooltip on its current native menu layer");
                 var tipRect = meta.Tooltip.Clone.Rect;
                 check(tipRect.X >= meta.gameObject.Rect.X + meta.gameObject.Rect.Width && tipRect.Y == meta.gameObject.Rect.Y

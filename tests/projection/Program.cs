@@ -1427,6 +1427,51 @@ Check(NativeUIProjection.FormatPickerMode(new[] { "WILD_BUTTON_CLICKED" }, new[]
 Check(!NativeUIProjection.IsDisabledFormatMode("STANDARD") && !NativeUIProjection.IsDisabledFormatMode("CASUAL")
     && !NativeUIProjection.IsDisabledFormatMode(null) && new[] { "WILD", "CLASSIC", "TWIST" }.All(NativeUIProjection.IsDisabledFormatMode),
     "Standard and Casual stay selectable; Wild, Classic and Twist are shown but disabled");
+Check(!new[] { "STANDARD", "WILD", "CASUAL", "CLASSIC", "TWIST" }.Any(m => NativeUIProjection.IsHiddenFormatMode(m) || NativeUIProjection.RankedButtonMode(m))
+    && NativeUIProjection.ClassicPlayHeader(false) == null && NativeUIProjection.ClassicAllowsHero("HERO_11") && NativeUIProjection.ClassicAllowsHero("HERO_10"),
+    "a Violet Hold save hides and relabels no format button or header, and keeps every class");
+// Classic 2014 (docs/classic-2014.md): a Classic save unlocks Classic and locks Standard and Wild; Casual stays open.
+using (ActiveSaveMeta.Use(ActiveSaveMeta.Classic))
+{
+    // The preview cache is per meta (review #6): a Violet Hold deck card that a Classic save does not preview stays
+    // previewed in Violet Hold, whichever meta touched the cache first.
+    var classicCustom = new HashSet<string>(LocalDecks.CustomCards.Select(card => card.Id), StringComparer.Ordinal);
+    string[] violetOnly;
+    using (ActiveSaveMeta.Use(ActiveSaveMeta.VioletHold))
+        violetOnly = LocalDecks.CustomCards.Select(card => card.Id).Where(id => !classicCustom.Contains(id)).Take(200).ToArray();
+    var notInClassic = violetOnly.Where(id => !NativeUIProjection.SupportsPreview(id)).ToArray();
+    using (ActiveSaveMeta.Use(ActiveSaveMeta.VioletHold))
+        Check(notInClassic.Length > 0 && notInClassic.All(NativeUIProjection.SupportsPreview),
+            "each save meta previews its own deck cards: " + notInClassic.Length + " of " + violetOnly.Length);
+    Check(NativeUIProjection.ActiveFormatMode == "STANDARD" && !NativeUIProjection.IsDisabledFormatMode("CASUAL")
+        && !NativeUIProjection.IsDisabledFormatMode("STANDARD") && new[] { "WILD", "CLASSIC", "TWIST" }.All(NativeUIProjection.IsDisabledFormatMode),
+        "a Classic save plays ranked (the client's Standard, relabelled Ranked) or Casual; Wild, Classic and Twist are off");
+    Check(new[] { "WILD", "CLASSIC", "TWIST" }.All(NativeUIProjection.IsHiddenFormatMode) && !NativeUIProjection.IsHiddenFormatMode("STANDARD")
+        && !NativeUIProjection.IsHiddenFormatMode("CASUAL"),
+        "a Classic save hides Wild and Twist: June 2014 had only Ranked and Casual");
+    Check(NativeUIProjection.RankedButtonMode("STANDARD") && !NativeUIProjection.RankedButtonMode("CASUAL") && NativeUIProjection.ClassicRankedLabel == "Ranked",
+        "a Classic save's ranked entry reads Ranked");
+    Check(NativeUIProjection.ClassicPlayHeader(false) == "Play Ranked" && NativeUIProjection.ClassicPlayHeader(true) == null,
+        "a Classic save's Play header reads Play Ranked, and Casual keeps the client's");
+    Check(NativeUIProjection.ClassicAllowsHero("HERO_08") && !NativeUIProjection.ClassicAllowsHero("HERO_11") && !NativeUIProjection.ClassicAllowsHero("HERO_10"),
+        "a Classic save makes decks for the nine original classes only");
+    Check(NativeUIProjection.NativeCardIsClassic(true, "VAN_EX1_116") == true && NativeUIProjection.NativeCardIsClassic(true, "EX1_116") == false
+        && NativeUIProjection.NativeCardIsClassic(false, "VAN_EX1_116") == null && NativeUIProjection.NativeCardIsClassic(true, "HERO_08") == null,
+        "the client's Classic format holds the VAN cards alone in a Classic save");
+    Check(NativeUIProjection.NativeCardIsWild(true, "VAN_EX1_116") == false && NativeUIProjection.NativeCardIsWild(true, "EX1_116") == true,
+        "a Classic save's own cards are not Wild there");
+    // The client opens the Classic pack as booster 1, which the Legacy type also names: the save's own type wins.
+    Check((string)Call("PackTypeForBooster", FairPackRules.NativeBoosterId(FairPackRules.Classic)) == FairPackRules.Classic
+        && NativeUIProjection.MassOpenable(FairPackRules.NativeBoosterId(FairPackRules.Classic), false),
+        "a Classic save opens its Classic packs from the client's booster 1");
+    var classicPool = NativeUIProjection.NativeCollectiblePool(LocalCrafting.CraftableCardIds);
+    Check(classicPool.Contains("VAN_CS2_182") && classicPool.Contains("VAN_EX1_116") && !classicPool.Any(id => id.StartsWith("CORE_", StringComparison.Ordinal)),
+        "a Classic save registers its Classic cards with the client, not the Violet Hold pool");
+    Check(NativeUIProjection.ProjectedLoanerKeys(0).Count == 0 && NativeUIProjection.ProjectedLoanerKeys(2, "showcase").Count == 0,
+        "a Classic save shows no Violet Hold loaner deck");
+}
+Check(NativeUIProjection.ActiveFormatMode == "STANDARD" && NativeUIProjection.NativeCardIsClassic(true, "VAN_EX1_116") == null
+    && NativeUIProjection.NativeCardIsWild(true, "EX1_116") == true, "Violet Hold answers are back after the Classic scope");
 var dimmedColor = NativeUIProjection.DisabledFormatTint((1f, 0.8f, 0.6f, 0.9f), (0.2f, 0.2f, 0.2f, 1f));
 var dimmedTint = NativeUIProjection.DisabledFormatTint(null, (1f, 1f, 1f, 0.5f));
 Check(dimmedColor.HasValue && dimmedColor.Value.Property == "_Color"

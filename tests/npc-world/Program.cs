@@ -19,7 +19,7 @@ internal static class Program
             if (args.Length == 1 && args[0] == "--world")
             {
                 DeckLibrarySuite.Run(); SkillSuite.Run(); QuestSuite.Run(); MistakeTargetSuite.Run();
-                PopulationSuite.Run(); MatchmakerSuite.Run(); PetSuite.Run(); CasualSuite.Run(); ArenaSuite.Run(); CastSuite.Run();
+                PopulationSuite.Run(); MatchmakerSuite.Run(); PetSuite.Run(); CasualSuite.Run(); ClassicSuite.Run(); ArenaSuite.Run(); CastSuite.Run();
                 Console.WriteLine("npc-world deck and world suites passed");
                 return 0;
             }
@@ -30,6 +30,7 @@ internal static class Program
             }
             if (args.Length == 1 && args[0] == "--replacement-lethal") { ReplacementLethalSuite.Run(); return 0; }
             if (args.Length == 1 && args[0] == "--deck-library") { DeckLibrarySuite.Run(); return 0; }
+            if (args.Length == 1 && args[0] == "--classic") { ClassicSuite.Run(); return 0; }
             if (args.Length == 1 && args[0] == "--matchmaker") { MatchmakerSuite.Run(); return 0; }
             if (args.Length == 1 && args[0] == "--difficulty") { DifficultySuite.Run(); return 0; }
             if (args.Length == 1 && args[0] == "--hard-pin-print") { Console.WriteLine(HardPin.Fingerprint()); return 0; }
@@ -53,6 +54,7 @@ internal static class Program
             MatchmakerSuite.Run();    // WP4
             PetSuite.Run();           // NPC pets (PROPOSED)
             CasualSuite.Run();        // #37 Standard Casual
+            ClassicSuite.Run();       // docs/classic-2014.md
             ArenaSuite.Run();         // #6 Arena
             CastSuite.Run();          // #66 named cast
             DifficultySuite.Run();    // NPC difficulty (2026-11-15)

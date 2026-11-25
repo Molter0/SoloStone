@@ -1014,6 +1014,8 @@ internal static partial class NativeUIProbe
                 + "\t" + engineStandard + "\t" + nativeWildCard);
             // A Standard card the client calls Wild would lock it out of decks: stop at boot. A Wild card the client calls
             // Standard only weakens the native editor's refusal (the save still refuses it at Play), so it is logged.
+            // A Classic save plays the client's Classic format, whose cards sit in their own set: no Standard check there.
+            if (ActiveSaveMeta.IsClassic) continue;
             if (owned.TryGetValue(id, out int count) && count > 0 && engineStandard && (!inStandard || nativeWildCard))
                 missingOwned.Add(id + " set=" + set + " standard");
             else if (count > 0 && !engineStandard && (!inWild || inStandard || !nativeWildCard))
@@ -1121,7 +1123,9 @@ internal static partial class NativeUIProbe
             : playerLegendRating.HasValue ? NpcWorldRuntime.OpponentLegendNumber(rating.Value, seasonGames, playerLegendRating)
             : NpcWorldRuntime.LegendNumber(rating.Value, seasonGames);
         var medal = new NetCache.NetCacheMedalInfo();
-        foreach (FormatType format in new[] { FormatType.FT_STANDARD, FormatType.FT_WILD })
+        // A Classic save's rank is also published for the Classic format, the one its picker shows.
+        foreach (FormatType format in ActiveSaveMeta.IsClassic ? new[] { FormatType.FT_STANDARD, FormatType.FT_WILD, FormatType.FT_CLASSIC }
+            : new[] { FormatType.FT_STANDARD, FormatType.FT_WILD })
         {
             var data = new PegasusUtil.MedalInfoData { FormatType = format, LeagueId = numbers.LeagueId,
                 StarLevel = numbers.StarLevel, Stars = numbers.Stars, BestStarLevel = numbers.BestStarLevel,
@@ -1453,8 +1457,8 @@ internal static partial class NativeUIProbe
             selected = native.ID + "|" + native.Name + "|" + native.HeroCardID + "|" + string.Join(",", native.GetCardsWithCardID().OrderBy(id => id));
             LocalCustomDeck custom = Profile.GetDraft(native.ID);
             var wild = custom == null ? Array.Empty<string>() : Profile.WildCards(custom.Id);
-            string format = custom?.Format ?? LocalProfile.StandardFormat;
-            if (format != LocalProfile.StandardFormat) {
+            string format = custom?.Format ?? LocalProfile.ActiveDeckFormat;
+            if (format != LocalProfile.ActiveDeckFormat) {
                 log.LogInfo("NATIVE_PICKER_FORMAT_REFUSED deck=" + custom.Id + " format=" + format);
                 DialogManager.Get()?.ShowPopup(new AlertPopup.PopupInfo {
                     m_headerText = NativeStandardText.FormatDeckHeader, m_text = NativeStandardText.FormatDeckBody(format),

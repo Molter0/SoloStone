@@ -8,6 +8,10 @@ internal static class Program
     {
         if (args.Length > 0 && args[0] == "--lethal-benchmark")
             return LethalBenchmarks.Run(args.Skip(1).ToArray());
+        // --write-measures <repo>: rewrites the generated tables plugin/Npc/TriggerValueData.cs (rows and arming hero powers)
+        // and plugin/Npc/DeathValueData.cs (rows) from the probes their sync tests compare against, after a card set change.
+        if (args.Length == 2 && args[0] == "--write-measures")
+            return MeasureTables.Write(args[1]);
         // --audit: the dated one-off audit reproductions (tests/run.py runs them as the `ai-golden-audit` suite); the rest of
         // the arguments are name filters.
         bool audit = args.Length > 0 && args[0] == "--audit";

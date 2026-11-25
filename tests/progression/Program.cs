@@ -14,6 +14,12 @@ if (args.Length == 2 && args[0] == "--gen-arena-decks")
     return;
 }
 
+if (args.Length == 2 && args[0] == "--gen-arena-classic-decks")
+{
+    ArenaDeckGenerator.Write(args[1], true);
+    return;
+}
+
 if (args.SequenceEqual(new[] { "--deck-premiums-only" }))
 {
     var deckPremiumRoot = Path.Combine(Path.GetTempPath(), "hs-deck-premiums-" + Guid.NewGuid());
@@ -62,7 +68,7 @@ if (args.Length == 0)
 {
     var arenaRoot = Path.Combine(Path.GetTempPath(), "hs-arena-" + Guid.NewGuid());
     Directory.CreateDirectory(arenaRoot);
-    try { ArenaChecks.Run(arenaRoot); NativeArenaBoundary.NativeArena.RunRealServiceTests(arenaRoot); } finally { Directory.Delete(arenaRoot, true); }
+    try { ArenaChecks.Run(arenaRoot); ClassicArenaChecks.Run(arenaRoot); NativeArenaBoundary.NativeArena.RunRealServiceTests(arenaRoot); } finally { Directory.Delete(arenaRoot, true); }
     var premiumRoot = Path.Combine(Path.GetTempPath(), "hs-deck-premiums-" + Guid.NewGuid());
     Directory.CreateDirectory(premiumRoot);
     try { DeckPremiumChecks.Run(premiumRoot); } finally { Directory.Delete(premiumRoot, true); }
@@ -77,7 +83,7 @@ if (args.Length == 0)
     // The gate runs only this no-argument path; keep the save-catalog/cheat checks in it.
     var gateCatalogRoot = Path.Combine(Path.GetTempPath(), "hs-profile-catalog-" + Guid.NewGuid());
     Directory.CreateDirectory(gateCatalogRoot);
-    try { RewardV5Checks.Run(gateCatalogRoot); MatchTimingChecks.Run(gateCatalogRoot); GrindTierChecks.Run(gateCatalogRoot); NpcDifficultyChecks.Run(gateCatalogRoot); ProfileCatalogChecks.Run(gateCatalogRoot); StartupSaveChecks.Run(gateCatalogRoot); SaveHoldChecks.Run(gateCatalogRoot); HiddenLoanerChecks.Run(gateCatalogRoot); TestLoanerGateChecks.Run(gateCatalogRoot); MassPackChecks.Run(gateCatalogRoot); DeathKnightTipChecks.Run(gateCatalogRoot); PremiumPackChecks.Run(gateCatalogRoot); DeckRecordChecks.Run(gateCatalogRoot); }
+    try { RewardV5Checks.Run(gateCatalogRoot); MatchTimingChecks.Run(gateCatalogRoot); GrindTierChecks.Run(gateCatalogRoot); NpcDifficultyChecks.Run(gateCatalogRoot); ProfileCatalogChecks.Run(gateCatalogRoot); StartupSaveChecks.Run(gateCatalogRoot); SaveHoldChecks.Run(gateCatalogRoot); HiddenLoanerChecks.Run(gateCatalogRoot); TestLoanerGateChecks.Run(gateCatalogRoot); MassPackChecks.Run(gateCatalogRoot); DeathKnightTipChecks.Run(gateCatalogRoot); PremiumPackChecks.Run(gateCatalogRoot); DeckRecordChecks.Run(gateCatalogRoot); ClassicSaveChecks.Run(gateCatalogRoot); }
     finally { Directory.Delete(gateCatalogRoot, true); }
     return;
 }

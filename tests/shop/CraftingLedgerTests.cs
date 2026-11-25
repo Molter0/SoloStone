@@ -243,7 +243,7 @@ internal static class CraftingLedgerTests
         }
         string unavailablePath = Fresh("upgrade-unavailable", setup: d => d.Collection.Add(new LocalCardCount { Id = Common, Count = 1, Acquired = 1 }));
         // Today's entire craftable pool is available; model a later availability withdrawal in the cached catalog.
-        var available = ((Lazy<HashSet<string>>)typeof(LocalClassRewards).GetField("Available",
+        var available = ((MetaLazy<HashSet<string>>)typeof(LocalClassRewards).GetField("Available",
             System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!.GetValue(null)!).Value;
         Check(available.Remove(Common), "availability fixture starts available");
         try {

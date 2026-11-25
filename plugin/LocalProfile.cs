@@ -406,10 +406,14 @@ internal static class LocalWelcomeGift
 {
     // Owner-approved V1 amounts. A different gift needs a new Version: saved receipts must keep validating.
     internal static int Version => tables.Keys.Max();
-    internal const string PackType = FairPackRules.Standard;
+    // A Classic save's welcome packs are Classic packs (docs/classic-2014.md).
+    internal static string PackType => FairPackRules.MainPackType;
     internal const int Packs = 10, Gold = 500, Dust = 400;
-    internal const string KitId = "kit:welcome", KitMilestoneId = "welcome";
-    internal const int KitGoldCap = 2500;
+    internal const string KitMilestoneId = "welcome", StandardKitId = "kit:welcome";
+    internal const int StandardKitGoldCap = 2500;
+    // A Classic shop sells no deck, so a Classic save's welcome has no deck kit: its receipt records KitId null and cap 0.
+    internal static string KitId => ActiveSaveMeta.IsClassic ? null : StandardKitId;
+    internal static int KitGoldCap => ActiveSaveMeta.IsClassic ? 0 : StandardKitGoldCap;
 
     // V2 free event-track amounts, plus the Normal-only login grant. Keep historical tables when adding a version.
     private static readonly (string Id, int Normal, int Golden)[] cardsV2 = {
@@ -433,7 +437,9 @@ internal static class LocalWelcomeGift
 
     private static bool HasAmounts(LocalWelcome welcome) => welcome != null
         && welcome.PackType == PackType && welcome.Packs == Packs && welcome.Gold == Gold && welcome.Dust == Dust
-        && welcome.KitId == KitId && welcome.KitGoldCap == KitGoldCap;
+        && (welcome.KitId == KitId && welcome.KitGoldCap == KitGoldCap
+            // Classic saves made by earlier branch builds kept the Violet Hold kit; they still load.
+            || ActiveSaveMeta.IsClassic && welcome.KitId == StandardKitId && welcome.KitGoldCap == StandardKitGoldCap);
 
     internal static bool IsKnown(LocalWelcome welcome) => HasAmounts(welcome) && tables.ContainsKey(welcome.Version);
 
@@ -463,7 +469,9 @@ public sealed partial class LocalProfile : IDisposable
     private const int ClassicMigrationVersion = 16;
     private const int CurrentVersion = 17;
     internal const int SaveVersion = CurrentVersion;
-    internal const string StandardFormat = "Standard";
+    internal const string StandardFormat = "Standard", ClassicFormat = "Classic";
+    // The format of this save's decks: Classic in a Classic save (docs/classic-2014.md), Standard otherwise.
+    internal static string ActiveDeckFormat => ActiveSaveMeta.IsClassic ? ClassicFormat : StandardFormat;
     // Personal decks only; loaners (NativeUIProjection.PlayerLoanerCapacity) sit above this cap. Raising it never
     // invalidates a save: load accepts any library size up to MaximumRecords and only shows the first drafts.
     public const int MaximumCustomDecks = 100;
@@ -653,6 +661,10 @@ public sealed partial class LocalProfile : IDisposable
         profileOptions = options ?? ProfileCatalog.OptionsBeside(this.path);
         this.backups = backups && !snapshot;
         Directory.CreateDirectory(Path.GetDirectoryName(this.path));
+        // Classic 2014: the save loads, migrates and validates under its own meta. The open save's meta is set for the
+        // whole process before it loads (SelectedProfile.OpenStartup); any other save restores it when this returns.
+        using (ActiveSaveMeta.Use(profileOptions.MetaId))
+        {
         lease = new FileStream(this.path + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         try
         {
@@ -716,6 +728,7 @@ public sealed partial class LocalProfile : IDisposable
             }
         }
         catch { lease.Dispose(); throw; }
+        }
     }
 
     public LocalMatchRecord Begin(string deck, string opponent, int seed) => Begin(deck, opponent, seed, null, null, null);
@@ -1402,10 +1415,12 @@ public sealed partial class LocalProfile : IDisposable
     {
         var deck = GetDraft(id);
         if (deck == null) return "The saved deck no longer exists.";
-        string format = deck.Format ?? StandardFormat;
-        if (format != StandardFormat) return "The saved deck is a " + format + " deck; only Standard decks can be played.";
+        string format = deck.Format ?? ActiveDeckFormat;
+        if (format != ActiveDeckFormat) return "The saved deck is a " + format + " deck; only " + ActiveDeckFormat + " decks can be played.";
         var wild = WildCards(id);
-        if (wild.Count != 0) return "The saved deck holds Wild cards (" + string.Join(", ", wild) + "); replace them to play Standard.";
+        if (wild.Count != 0) return ActiveSaveMeta.IsClassic
+            ? "The saved deck holds cards outside Classic (" + string.Join(", ", wild) + "); replace them to play Classic."
+            : "The saved deck holds Wild cards (" + string.Join(", ", wild) + "); replace them to play Standard.";
         return "The saved deck is incomplete. Acquire missing cards before playing.";
     }
 
@@ -1413,7 +1428,7 @@ public sealed partial class LocalProfile : IDisposable
     {
         var deck = GetDraft(id);
         if (deck == null) return false;
-        if ((deck.Format ?? StandardFormat) != StandardFormat || WildCards(id).Count != 0) return false;
+        if ((deck.Format ?? ActiveDeckFormat) != ActiveDeckFormat || WildCards(id).Count != 0) return false;
         try {
             PlayableDeck(deck.Name, deck.Hero, deck.Cards, deck.Sideboards);
             // Retail CollectionDeck.CanCardBeAddedAsOwned (254477): a sideboard copy is owned only beyond the main deck's
@@ -1716,10 +1731,61 @@ public sealed partial class LocalProfile : IDisposable
             SelectedBoard = LocalHubCosmetics.RandomBoard,
             Achievements = NewAchievementState()
         };
+        if (ActiveSaveMeta.IsClassic) AddClassicStart(profile);
         foreach (var card in profile.Collection) card.Acquired = Math.Min(card.Count, Playset(card.Id));
         GrantCoreUnlocks(profile);
         ValidateV14(profile);
         return profile;
+    }
+
+    // Classic 2014 (docs/classic-2014.md): a new Classic save owns two copies of every Basic Classic card (rarity FREE), as
+    // retail gave them, and one Basic deck per class: the npc-classic-starter-<class> lists of data/npc/classic-decks-v1.json.
+    // No Core cards, no #87 reprints and no Violet Hold starter loaners.
+    internal const string ClassicDecksResource = "SoloStone.Npc.classic-decks-v1.json";
+    internal const string ClassicStarterPrefix = "npc-classic-starter-";
+    internal static IReadOnlyList<string> ClassicBasicIds() => Array.AsReadOnly(
+#if ENGINE_SOURCE
+        SabberStoneCore.Model.Cards.Classic.Where(card => card.Rarity == SabberStoneCore.Enums.Rarity.FREE
+            && card.Type != SabberStoneCore.Enums.CardType.HERO).Select(card => card.Id)
+            .OrderBy(id => id, StringComparer.Ordinal).ToArray()
+#else
+        Array.Empty<string>()
+#endif
+    );
+    // (hero, name, 30 cards) per class, in class order of the file.
+    internal static IReadOnlyList<(string Hero, string Name, string[] Cards)> ClassicStarterDecks()
+    {
+        object root;
+        using (var stream = typeof(LocalProfile).Assembly.GetManifestResourceStream(ClassicDecksResource)
+            ?? throw new InvalidOperationException("Missing embedded resource: " + ClassicDecksResource))
+            root = EmbeddedJson.Read(stream);
+        var decks = new List<(string, string, string[])>();
+        foreach (var value in EmbeddedJson.Array(EmbeddedJson.Object(root)["decks"]))
+        {
+            var deck = EmbeddedJson.Object(value);
+            string id = EmbeddedJson.Text(deck, "id");
+            if (id == null || !id.StartsWith(ClassicStarterPrefix, StringComparison.Ordinal)) continue;
+            var cards = EmbeddedJson.Array(deck["cards"]).Select(EmbeddedJson.Object)
+                .SelectMany(row => Enumerable.Repeat(EmbeddedJson.Text(row, "id"), EmbeddedJson.Integer(row, "count") ?? 0)).ToArray();
+            decks.Add((EmbeddedJson.Text(deck, "hero"), EmbeddedJson.Text(deck, "name"), cards));
+        }
+        return decks;
+    }
+    private static void AddClassicStart(LocalProfileData profile)
+    {
+        var basic = ClassicBasicIds();
+        if (basic.Count == 0) throw new InvalidOperationException("Classic saves need the Classic cards.");
+        profile.Collection = basic.Select(id => new LocalCardCount { Id = id, Count = 2 }).ToList();
+        var owned = new HashSet<string>(basic, StringComparer.Ordinal);
+        foreach (var starter in ClassicStarterDecks())
+        {
+            if (starter.Cards.Any(id => !owned.Contains(id)))
+                throw new InvalidOperationException("Classic starter deck holds a card a new Classic save does not own: " + starter.Name);
+            long id = profile.NextCustomDeckId;
+            profile.NextCustomDeckId = checked(id + 1);
+            profile.CustomDecks.Add(new LocalCustomDeck { Id = id, SortOrder = id, Name = starter.Name, Hero = starter.Hero,
+                Cards = starter.Cards.ToList(), Format = ClassicFormat });
+        }
     }
 
     private static LocalProfileData MigrateV1(LocalProfileData old)
@@ -1843,6 +1909,8 @@ public sealed partial class LocalProfile : IDisposable
 
     private static bool GrantCoreUnlocks(LocalProfileData profile)
     {
+        // A Classic save has no Core cards: its collection is the Classic set alone (docs/classic-2014.md).
+        if (ActiveSaveMeta.IsClassic) return false;
         bool changed = profile.CoreScheduleVersion < LocalCoreProgression.ScheduleVersion;
         profile.CoreScheduleVersion = Math.Max(profile.CoreScheduleVersion, LocalCoreProgression.ScheduleVersion);
         foreach (var card in LocalCoreProgression.Owned(XpMap(profile), false))
@@ -1992,7 +2060,7 @@ public sealed partial class LocalProfile : IDisposable
     private void Commit(LocalProfileData next)
     {
         if (next.Version != CurrentVersion) throw new InvalidOperationException("Only V" + CurrentVersion + " profiles can be committed.");
-        foreach (var deck in next.CustomDecks ?? new List<LocalCustomDeck>()) if (deck != null && deck.Format == null) deck.Format = StandardFormat;
+        foreach (var deck in next.CustomDecks ?? new List<LocalCustomDeck>()) if (deck != null && deck.Format == null) deck.Format = ActiveDeckFormat;
         ValidateV14(next, profileOptions.AllCosmetics, profileOptions.LegendRating, profileOptions.AllDecks);
         GrantCoreUnlocks(next);
         LogDeckRepairs(GrantClassicReprints(next));
@@ -2138,7 +2206,7 @@ public sealed partial class LocalProfile : IDisposable
 
     // #87 Classic -> Core. A Classic or Basic card whose Core reprint shares its copy group (LocalCoreProgression.Unlocks).
     internal static IReadOnlyDictionary<string, string> ClassicReprints => classicReprints.Value;
-    private static readonly Lazy<IReadOnlyDictionary<string, string>> classicReprints = new Lazy<IReadOnlyDictionary<string, string>>(() =>
+    private static readonly MetaLazy<IReadOnlyDictionary<string, string>> classicReprints = new MetaLazy<IReadOnlyDictionary<string, string>>(() =>
         new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(LocalCoreProgression.Unlocks
             .Where(unlock => unlock.CopyGroup != unlock.Id && LocalCardCatalog.IsStandardId(unlock.Id) && !LocalCardCatalog.IsStandardId(unlock.CopyGroup)
                 && !LocalCardCatalog.IsCore(unlock.CopyGroup) && LocalCoreProgression.IsAvailable(unlock.Id) && SameClass(unlock.Id, unlock.CopyGroup))
@@ -2159,6 +2227,8 @@ public sealed partial class LocalProfile : IDisposable
     internal static List<string> GrantClassicReprints(LocalProfileData profile)
     {
         var lines = new List<string>();
+        // #87 belongs to Violet Hold: a Classic save keeps its Classic cards and gets no Core reprints.
+        if (ActiveSaveMeta.IsClassic) return lines;
         var reprints = ClassicReprints;
         var owned = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var row in (profile.Collection ?? new List<LocalCardCount>()).Concat(profile.PremiumCollection ?? new List<LocalCardCount>()))

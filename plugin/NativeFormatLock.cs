@@ -65,6 +65,10 @@ internal static class NativeFormatLock
             prefix: new HarmonyMethod(typeof(NativeFormatLock), nameof(RankedPlayMode)));
         harmony.Patch(Required(typeof(DeckPickerTrayDisplay), "ShowFormatTypePickerPopup", Type.EmptyTypes),
             postfix: new HarmonyMethod(typeof(NativeFormatLock), nameof(PickerShown)));
+        harmony.Patch(Required(typeof(AbsDeckPickerTrayDisplay), "SetHeaderText", new[] { typeof(string) }),
+            prefix: new HarmonyMethod(typeof(NativeFormatLock), nameof(RankedHeader)));
+        harmony.Patch(AccessTools.Method(typeof(HeroPickerButton), "UpdateDisplay") ?? throw new MissingMethodException("HeroPickerButton", "UpdateDisplay"),
+            postfix: new HarmonyMethod(typeof(NativeFormatLock), nameof(ClassicHeroButton)));
     }
 
     private static MethodInfo Required(Type type, string name, Type[] args) =>
@@ -80,12 +84,38 @@ internal static class NativeFormatLock
     private static void StandardMode(ref VisualsFormatType __0)
     {
         if (!NativeUIProbe.IsolatedLaunch) return;
-        if (__0 != VisualsFormatType.VFT_STANDARD && __0 != VisualsFormatType.VFT_CASUAL)
+        // Every save plays Standard (or Casual) in the client; a Classic save's Standard is its ranked Classic (LocalDeckFormat).
+        VisualsFormatType kept = VisualsFormatType.VFT_STANDARD;
+        if (__0 != kept && __0 != VisualsFormatType.VFT_CASUAL)
         {
-            log?.LogInfo("NATIVE_FORMAT mode " + __0 + " kept VFT_STANDARD");
-            __0 = VisualsFormatType.VFT_STANDARD;
+            log?.LogInfo("NATIVE_FORMAT mode " + __0 + " kept " + kept);
+            __0 = kept;
         }
         NativeUIProjection.PickerSwitchActive = PlayScreen;
+    }
+
+    // Classic 2014 (owner 2026-11-24): the Play screen's header of a Classic save reads "Play Ranked" for its ranked mode (the
+    // client's Standard, NativeUIProbe.LocalDeckFormat); Casual keeps the client's own header.
+    private static void RankedHeader(ref string text)
+    {
+        if (!NativeUIProbe.IsolatedLaunch || !PlayScreen) return;
+        string header = NativeUIProjection.ClassicPlayHeader(NativeUIProjection.CasualPlayMode);
+        if (header != null) text = header;
+    }
+
+    // Classic 2014: June 2014 had nine classes. In a Classic save the New Deck class picker locks Death Knight and Demon Hunter
+    // with the client's own locked look and a reason (making one froze the deck editor: no card of theirs is Classic).
+    private static void ClassicHeroButton(HeroPickerButton __instance)
+    {
+        try
+        {
+            if (!NativeUIProbe.IsolatedLaunch || __instance == null) return;
+            var card = SabberStoneCore.Model.Cards.FromAssetId(__instance.HeroCardDbId);
+            if (card == null || NativeUIProjection.ClassicAllowsHeroClass(card.Class) || __instance.IsLocked()) return;
+            __instance.SetLockReasonText(NativeUIProjection.ClassicLockedClassText);
+            __instance.Lock();
+        }
+        catch (Exception error) { log?.LogWarning("NATIVE_FORMAT classic hero lock failed: " + error.Message); }
     }
 
     private static bool PlayScreen => SceneMgr.IsInitialized() && SceneMgr.Get().GetMode() == SceneMgr.Mode.TOURNAMENT;
@@ -109,7 +139,7 @@ internal static class NativeFormatLock
             if (profile != null && profile.PrefersCasual != casual)
             {
                 profile.SetPreferredPlayMode(casual);
-                log?.LogInfo("NATIVE_FORMAT mode " + (casual ? "Casual" : "Standard") + " remembered");
+                log?.LogInfo("NATIVE_FORMAT mode " + (casual ? "Casual" : NativeUIProjection.ActiveFormatMode) + " remembered");
             }
         }
         catch (Exception error) { log?.LogWarning("NATIVE_FORMAT mode not remembered: " + error.Message); }
@@ -176,8 +206,8 @@ internal static class NativeFormatLock
         if (picker == null) return;
         Transform root = picker.transform;
         var found = new List<string>();
-        // The popup's own Standard button tells "still loading" apart from "this button's inactive state hides it".
-        bool standardShown = buttons.Values.Any(button => button.Element != null && button.Mode == "STANDARD"
+        // The popup's own Standard (Classic in a Classic save) button tells "still loading" apart from "this button's inactive state hides it".
+        bool standardShown = buttons.Values.Any(button => button.Element != null && button.Mode == NativeUIProjection.ActiveFormatMode
             && Shown(VisualRoot(button.Element.transform, root)));
         foreach (Clickable clickable in picker.GetComponentsInChildren<Clickable>(true))
         {
@@ -192,7 +222,9 @@ internal static class NativeFormatLock
                 buttons[id] = known = (element, mode);
             }
             found.Add(PathOf(clickable.transform, root) + "=" + (known.Mode ?? "-"));
+            if (NativeUIProjection.RankedButtonMode(known.Mode)) Relabel(clickable, root, NativeUIProjection.ClassicRankedLabel, NativeUIProjection.ClassicRankedDescription);
             if (!NativeUIProjection.IsDisabledFormatMode(known.Mode)) continue;
+            if (NativeUIProjection.IsHiddenFormatMode(known.Mode)) { Hide(clickable, root); continue; }
             Lock(id, clickable, known.Element, standardShown);
         }
         string report = string.Join(";", found);
@@ -229,6 +261,40 @@ internal static class NativeFormatLock
             element.AddEventListener(UIEventType.ROLLOUT, _ => HideNote());
         }
         Grey(visuals);
+    }
+
+    // Classic 2014 (owner 2026-11-24): the ranked entry of a Classic save reads "Ranked", with a ranked description. Its
+    // labels are UberText, from a client library the plugin does not reference, so they are found and set by reflection, on
+    // every scan (the client rewrites them). The first label in the button is its title, the others its description.
+    // The client shows the Standard button in its inactive look while the format is not Standard, which can hide it: the
+    // button and its visuals are kept active.
+    private static void Relabel(Clickable clickable, Transform root, string title, string description)
+    {
+        try
+        {
+            Transform visuals = VisualRoot(clickable.transform, root);
+            if (!clickable.Active) clickable.Active = true;
+            if (!visuals.gameObject.activeSelf) visuals.gameObject.SetActive(true);
+            Type textType = DeckLayout.MenuTextType;
+            PropertyInfo text = textType?.GetProperty("Text");
+            if (text == null) return;
+            var labels = visuals.GetComponentsInChildren(textType, true).Where(component => component != null).ToArray();
+            for (int i = 0; i < labels.Length; i++)
+            {
+                string wanted = i == 0 ? title : description;
+                if (!string.Equals(text.GetValue(labels[i]) as string, wanted, StringComparison.Ordinal)) text.SetValue(labels[i], wanted);
+            }
+        }
+        catch (Exception error) { log?.LogWarning("NATIVE_FORMAT ranked label failed: " + error.Message); }
+    }
+
+    // A Classic save's picker has no Standard, Wild or Twist (June 2014 had no formats): the button and its visuals are
+    // switched off on every scan, since widget states may switch them back on.
+    private static void Hide(Clickable clickable, Transform root)
+    {
+        if (clickable.Active) clickable.Active = false;
+        Transform visuals = VisualRoot(clickable.transform, root);
+        if (visuals.gameObject.activeSelf) visuals.gameObject.SetActive(false);
     }
 
     private static bool Shown(Transform visuals) => visuals.gameObject.activeInHierarchy

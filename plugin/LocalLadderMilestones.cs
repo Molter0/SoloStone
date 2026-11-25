@@ -188,6 +188,10 @@ internal static class LocalLadderMilestones
                     foreach (string npc in context.ChallengersFor(milestone.Id))
                         grants.Add(new MilestoneGrant("Challengers", npc, grant.Count));
                     break;
+                case "DeckKit":
+                    // A kit pays only for a ready-made deck, and a Classic shop sells none.
+                    if (!ActiveSaveMeta.IsClassic) grants.Add(grant);
+                    break;
                 case "LegendDeck":
                     // Legacy: profiles that reached Legend before snapshots existed, or a winning deck that can no
                     // longer be resolved. Never block settlement over it; Legacy is the broader claim.

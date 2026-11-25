@@ -39,9 +39,11 @@ public static class LocalCrafting
     public const int CommonCraft = 40, RareCraft = 100, EpicCraft = 400, LegendaryCraft = 1600;
     private static readonly IReadOnlyDictionary<string, EngineCard> Definitions =
         Cards.All.ToDictionary(card => card.Id, StringComparer.Ordinal);
-    private static readonly HashSet<string> CraftableIds = new HashSet<string>(
+    // Per save meta: a Classic save crafts its Classic cards (docs/classic-2014.md).
+    private static readonly MetaLazy<HashSet<string>> craftableIds = new MetaLazy<HashSet<string>>(() => new HashSet<string>(
         // Fabled primaries and sideboard owners are ordinary legendaries here (owner 2026-10-30).
-        LocalShop.StandardCollectionCards.Select(card => card.Id), StringComparer.Ordinal);
+        LocalShop.StandardCollectionCards.Select(card => card.Id), StringComparer.Ordinal));
+    private static HashSet<string> CraftableIds => craftableIds.Value;
 
     private static readonly HashSet<string> GrantOnlyIds = new HashSet<string>(
         LocalWelcomeGift.HistoricalCardIds, StringComparer.Ordinal);
@@ -51,7 +53,7 @@ public static class LocalCrafting
     // Core, free/starter, grant-only and non-collectible (Fabled companion) cards stay out, exactly as TryGetPrice refuses
     // them. Fabled primaries and sideboard owners are in: ordinary legendaries since owner 2026-10-30.
     internal static IReadOnlyList<string> CraftableCardIds => craftableCardIds.Value;
-    private static readonly Lazy<string[]> craftableCardIds = new Lazy<string[]>(() =>
+    private static readonly MetaLazy<string[]> craftableCardIds = new MetaLazy<string[]>(() =>
         CraftableIds.Where(id => GetIneligibility(id) == CraftIneligibility.None).OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
     public static CraftIneligibility GetIneligibility(string cardId)

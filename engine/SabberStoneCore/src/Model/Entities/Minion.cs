@@ -145,6 +145,7 @@ namespace SabberStoneCore.Model.Entities
 		public void Silence()
 		{
 			if (IsDormant) return;
+            Kettle.PowerHistory.NameSelected(this); // a selected silence names its victim first
             if (OngoingEffect is SabberStoneCore.Auras.EnrageEffect enrage) { enrage.Remove(); enrage.Update(); }
             Actions.PayloadRules.Clear(this, Actions.PayloadPolicy.Silence);
 			if (Actions.HeraldRules.IsSoldier(Card))

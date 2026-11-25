@@ -114,17 +114,18 @@ public static class LocalDecks
 #endif
     });
     internal static IEnumerable<EngineCard> KnownDeckbuildingCards => knownDeckbuildingCards.Value;
-    private static readonly Lazy<IReadOnlyList<EngineCard>> legalDeckbuildingCards = new Lazy<IReadOnlyList<EngineCard>>(() =>
+    // Per save meta (MetaLazy): a Classic save's legal deckbuilding cards are its own.
+    private static readonly MetaLazy<IReadOnlyList<EngineCard>> legalDeckbuildingCards = new MetaLazy<IReadOnlyList<EngineCard>>(() =>
         Array.AsReadOnly(KnownDeckbuildingCards.Where(LocalCardCatalog.InActiveMeta).ToArray()));
-    private static readonly Lazy<IReadOnlyList<EngineCard>> customCards = new Lazy<IReadOnlyList<EngineCard>>(() =>
+    private static readonly MetaLazy<IReadOnlyList<EngineCard>> customCards = new MetaLazy<IReadOnlyList<EngineCard>>(() =>
         Array.AsReadOnly(LocalCardCatalog.Supported.Concat(LegalDeckbuildingCards).Distinct().ToArray()));
     public static IEnumerable<EngineCard> LegalDeckbuildingCards => legalDeckbuildingCards.Value;
     public static IEnumerable<EngineCard> CustomCards => customCards.Value;
-    private static readonly Lazy<HashSet<string>> customCardIds = new Lazy<HashSet<string>>(() =>
+    private static readonly MetaLazy<HashSet<string>> customCardIds = new MetaLazy<HashSet<string>>(() =>
         new HashSet<string>(CustomCards.Select(card => card.Id), StringComparer.Ordinal));
     private static readonly Lazy<HashSet<string>> storedCardIds = new Lazy<HashSet<string>>(() =>
         new HashSet<string>(LocalCardCatalog.Current.Concat(KnownDeckbuildingCards).Select(card => card.Id), StringComparer.Ordinal));
-    private static readonly Lazy<HashSet<string>> legalCardIds = new Lazy<HashSet<string>>(() =>
+    private static readonly MetaLazy<HashSet<string>> legalCardIds = new MetaLazy<HashSet<string>>(() =>
         new HashSet<string>(LegalDeckbuildingCards.Select(card => card.Id), StringComparer.Ordinal));
     internal static bool IsCustomCard(string id) => customCardIds.Value.Contains(id);
     internal static bool IsLegalDeckbuildingCard(string id) => legalCardIds.Value.Contains(id);
@@ -865,7 +866,7 @@ public static class LocalDecks
             deck.CardIds.Select(id => WaitingForCatalog(id) ? "CATA_612" : id).ToArray(), deck.Source) : deck).ToArray();
     // Keep stable loaner identities and other seats while early-admission cards await the installed catalog.
     private static bool WaitingForCatalog(string id) => (id == "BE_036" || id.StartsWith("BE_EVENT_", StringComparison.Ordinal))
-        && !LocalCardCatalog.InActiveMeta(Cards.FromId(id));
+        && !LocalCardCatalog.InVioletHold(Cards.FromId(id));
     // Fixed opponents of the later seat loaners and the showcase: always one of the four frozen batch-2 opponents.
     private static readonly IReadOnlyDictionary<string, string> SeatOpponents = new Dictionary<string, string>(StringComparer.Ordinal) {
         ["test-standard-b11-warrior"] = "test-standard-batch-2-opp-druid",

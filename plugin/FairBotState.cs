@@ -988,9 +988,13 @@ public sealed class FairBotState
         complete = true;
         priorMass = 1;
         if (opponentSecretCount == 0 || Bot.Opponent.SecretZone.Any(c => c.IsSecret)) return Array.Empty<string[]>();
-        var prior = CardFrequencies.ForOrEmpty(Bot.Opponent.BaseClass).Where(f => Cards.FromId(f.CardId).IsSecret)
+        bool classic = Bot.Game.FormatType == FormatType.FT_CLASSIC;
+        var prior = CardFrequencies.ForOrEmpty(Bot.Opponent.BaseClass).Where(f => Cards.FromId(f.CardId).IsSecret
+                && (!classic || Cards.FromId(f.CardId).Set == CardSet.VANILLA))
             .ToDictionary(f => f.CardId, f => f.Weight, StringComparer.Ordinal);
-        var pool = new HashSet<string>(SecretPool(Bot.Opponent.BaseClass), StringComparer.Ordinal);
+        // A Classic match's class Secrets are its VAN Secrets; the Violet Hold pool is the policy's Standard Secrets.
+        var pool = new HashSet<string>(classic ? ClassicImplementedSecrets.Value.Where(id => Cards.FromId(id).Class == Bot.Opponent.BaseClass)
+            : SecretPool(Bot.Opponent.BaseClass), StringComparer.Ordinal);
         pool.UnionWith(prior.Keys);
         bool broad = game.HistoryFacts.RecordCount > RootHistoryLimit;
         if (broad) complete = false; // The work cap must not turn a partial history into a certificate.
@@ -1014,7 +1018,8 @@ public sealed class FairBotState
                 || history.Events<CardTransferredFact>().Any(f => f.ControllerId == Bot.Opponent.Id)
                 || publicCards.Any(f => Cards.FromAssetId(f.DbfId).Id == "TIME_860");
         }
-        if (broad || pool.Count < opponentSecretCount) pool.UnionWith(AllImplementedSecrets.Value);
+        if (broad || pool.Count < opponentSecretCount)
+            pool.UnionWith(classic ? ClassicImplementedSecrets.Value : AllImplementedSecrets.Value);
         // Priors order work only: even tiny-prior blockers remain in exhaustive certification.
         var ordered = pool.OrderByDescending(id => prior.TryGetValue(id, out double weight) ? weight : 0)
             .ThenBy(id => id, StringComparer.Ordinal).ToArray();
@@ -1048,8 +1053,12 @@ public sealed class FairBotState
         secretWorldPriorMass = priorMass;
         return secretWorlds = worlds;
     }
+    // The broad Secret worlds follow the match's format: a Classic (FT_CLASSIC) match can hold only VAN Secrets, and any other
+    // match never a VAN one, so Violet Hold enumerates the same worlds as before the VAN cards were implemented.
     private static readonly Lazy<string[]> AllImplementedSecrets = new Lazy<string[]>(() => Cards.All
-        .Where(c => c.Implemented && c.IsSecret).Select(c => c.Id).Distinct(StringComparer.Ordinal).ToArray());
+        .Where(c => c.Implemented && c.IsSecret && c.Set != CardSet.VANILLA).Select(c => c.Id).Distinct(StringComparer.Ordinal).ToArray());
+    private static readonly Lazy<string[]> ClassicImplementedSecrets = new Lazy<string[]>(() => Cards.All
+        .Where(c => c.Implemented && c.IsSecret && c.Set == CardSet.VANILLA).Select(c => c.Id).Distinct(StringComparer.Ordinal).ToArray());
     internal FairBotState WithOpponentSecrets(IReadOnlyList<string> secrets, int sample)
     {
         if (secrets.Count != opponentSecretSlots.Length) throw new ArgumentException("Sample must match the reserved Secret slots.", nameof(secrets));

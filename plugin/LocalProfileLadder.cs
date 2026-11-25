@@ -100,9 +100,10 @@ public sealed partial class LocalProfile
         PlacementGames = LadderRules.PlacementLength, Rating = rating, LegendReached = true
     });
 
-    internal static double LegendOneCreationRating()
+    // meta: the new save's meta (null = the installed world's).
+    internal static double LegendOneCreationRating(string meta = null)
     {
-        try { return NpcLegendTopRating?.Invoke(0) ?? 1900d; }
+        try { return (meta == null ? null : MetaLegendTopRating?.Invoke(meta)) ?? NpcLegendTopRating?.Invoke(0) ?? 1900d; }
         catch (Exception) { return 1900d; }
     }
 

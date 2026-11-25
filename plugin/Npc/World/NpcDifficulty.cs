@@ -200,7 +200,9 @@ public static class NpcCoreDecks
     public static NpcDeckLibrary Include(NpcDeckLibrary library)
     {
         if (library == null) return null;
-        var extra = Entries().Concat(NpcBeginnerDecks.Entries()).Where(entry => library.Find(entry.Id) == null).ToList();
+        // A Classic world (ClassicNpcDecks) has its own Core decks: the classic starters. Violet Hold's would hold other cards.
+        var extra = (ClassicNpcDecks.IsClassic(library) ? ClassicNpcDecks.CoreEntries(library) : Entries().Concat(NpcBeginnerDecks.Entries()))
+            .Where(entry => library.Find(entry.Id) == null).ToList();
         return extra.Count == 0 ? library : new NpcDeckLibrary(library.Schema, library.LibraryVersion, library.ActiveMeta, library.Decks.Concat(extra));
     }
 

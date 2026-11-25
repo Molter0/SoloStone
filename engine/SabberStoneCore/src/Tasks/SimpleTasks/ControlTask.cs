@@ -45,6 +45,9 @@ namespace SabberStoneCore.Tasks.SimpleTasks
 					continue; //return;
 				}
 
+				// A selected steal (Sylvanas Windrunner's Deathrattle, Mind Control Tech's Battlecry) names the minion it takes:
+				// without a TARGET the client plays the steal FX on every enemy minion (PowerHistory.SelectedHitTarget).
+				Kettle.PowerHistory.NameSelected(p);
 				using var dormantControl = SabberStoneCore.Actions.DormantRules.PreserveControl((Minion)p);
                 using var historyControl = game.Facts.ControlTransfer((Minion)p,source);
 				Minion removedEntity = (Minion) p.Zone.Remove(p);

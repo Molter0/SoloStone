@@ -16,7 +16,7 @@
     <Compile Include="../Shared/PoolSnapshots.cs" Link="PoolSnapshots.cs" />
     <Compile Include="../../plugin/LocalDecks.cs" Link="LocalDecks.cs" />
     <Compile Include="../../plugin/LocalDeckCards.cs" Link="LocalDeckCards.cs" />
-    <Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" />
+    <Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" /><Compile Include="../../plugin/ActiveSaveMeta.cs" Link="ActiveSaveMeta.cs" />
     <Compile Include="../../research/modern-mechanics/ProofDecks.cs" Link="ProofDecks.cs" />
   </ItemGroup>
 </Project>

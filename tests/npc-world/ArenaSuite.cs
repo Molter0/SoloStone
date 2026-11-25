@@ -169,6 +169,17 @@ internal static class ArenaSuite
         double low = MeanBucket(0, 2), mid = MeanBucket(0, 0), high = MeanBucket(10, 0);
         Program.Require(low < mid && mid < high && high - low > 1, "drawn decks get stronger with the record: " + low.ToString("F2") + " < " + mid.ToString("F2") + " < " + high.ToString("F2"));
 
+        // Opponents get stronger with the wins (owner 2026-11-24): the NPC field's centre climbs per win, losses do not lower it.
+        double MeanRating(int wins, int losses)
+        {
+            double sum = 0; int n = 400;
+            for (int i = 0; i < n; i++)
+                sum += matchmaker.Choose(new ArenaRequest(7000 + i, wins + losses, wins, losses, null, null)).Npc.HomeRating;
+            return sum / n;
+        }
+        double fresh = MeanRating(0, 0), climbing = MeanRating(5, 0), deep = MeanRating(10, 0);
+        Program.Require(fresh < climbing && climbing < deep && deep - fresh > 250,
+            "NPC rating climbs with the wins: " + fresh.ToString("F0") + " < " + climbing.ToString("F0") + " < " + deep.ToString("F0"));
         // No repeat within a run (the caller passes the run's earlier opponents), whatever the record path.
         for (int run = 0; run < 40; run++)
         {

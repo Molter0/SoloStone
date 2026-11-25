@@ -1,0 +1,1854 @@
+{
+  "schema": 1,
+  "libraryVersion": 1,
+  "activeMeta": "classic-2014",
+  "_doc": "SoloStone Classic NPC decks (docs/classic-2014.md): June 2014 decks of VAN_* cards only, for Classic saves. Same entry shape as casual-decks-v1.json, admission \"classic\", origin \"classic-curated\". Ten period archetypes plus a Basic starter deck per class.",
+  "decks": [
+    {
+      "id": "npc-classic-miracle-rogue",
+      "version": 1,
+      "name": "Miracle Rogue",
+      "class": "ROGUE",
+      "hero": "HERO_03",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "combo",
+        "powerTier": 5,
+        "pilotDifficulty": 5,
+        "annoyance": 0,
+        "fun": 4,
+        "bands": [
+          "gold",
+          "legend"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Miracle Rogue, Auctioneer at 5 mana"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_072",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_145",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_073",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_128",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_074",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_124",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_581",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_129",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_134",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_284",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_117",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_095",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_116",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_012",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_613",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_278",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_144",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-zoo",
+      "version": 1,
+      "name": "Zoolock",
+      "class": "WARLOCK",
+      "hero": "HERO_07",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "aggro",
+        "powerTier": 4,
+        "pilotDifficulty": 3,
+        "annoyance": 0,
+        "fun": 4,
+        "bands": [
+          "bronze",
+          "legend"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Zoo Warlock"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_EX1_319",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_065",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_308",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_188",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_008",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_029",
+          "count": 2
+        },
+        {
+          "id": "VAN_NEW1_019",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_162",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_556",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_019",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_093",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_310",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_316",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_302",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_116",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_203",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-handlock",
+      "version": 1,
+      "name": "Handlock",
+      "class": "WARLOCK",
+      "hero": "HERO_07",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "control",
+        "powerTier": 5,
+        "pilotDifficulty": 4,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "silver",
+          "legend"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Handlock, Molten Giant at 20"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_EX1_302",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_045",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_058",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_093",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_043",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_303",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_062",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_005",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_309",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_105",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_620",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_323",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_116",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_564",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_117",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_308",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_316",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_203",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_016",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-control-warrior",
+      "version": 1,
+      "name": "Control Warrior",
+      "class": "WARRIOR",
+      "hero": "HERO_01",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "control",
+        "powerTier": 5,
+        "pilotDifficulty": 4,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "gold",
+          "legend"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Control Warrior"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_108",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_410",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_400",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_106",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_402",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_603",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_606",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_407",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_411",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_414",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_561",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_298",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_016",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_007",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_005",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_558",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_114",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_391",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_284",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_572",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-ramp-druid",
+      "version": 1,
+      "name": "Ramp Druid",
+      "class": "DRUID",
+      "hero": "HERO_06",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 4,
+        "pilotDifficulty": 3,
+        "annoyance": 0,
+        "fun": 4,
+        "bands": [
+          "silver",
+          "legend"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Ramp Druid, Force of Nature with Charge"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_EX1_169",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_013",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_154",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_012",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_166",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_165",
+          "count": 2
+        },
+        {
+          "id": "VAN_NEW1_008",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_178",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_571",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_011",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_573",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_005",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_284",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_016",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_558",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_173",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_155",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_298",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_164",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-buzzard-hunter",
+      "version": 1,
+      "name": "Buzzard Hunter",
+      "class": "HUNTER",
+      "hero": "HERO_05",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "aggro",
+        "powerTier": 4,
+        "pilotDifficulty": 3,
+        "annoyance": 0,
+        "fun": 4,
+        "bands": [
+          "bronze",
+          "legend"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Hunter, Buzzard and Unleash the Hounds before their nerfs"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_084",
+          "count": 2
+        },
+        {
+          "id": "VAN_DS1_185",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_237",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_538",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_539",
+          "count": 2
+        },
+        {
+          "id": "VAN_NEW1_031",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_610",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_611",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_536",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_029",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_188",
+          "count": 2
+        },
+        {
+          "id": "VAN_NEW1_019",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_531",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_203",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_116",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_089",
+          "count": 2
+        },
+        {
+          "id": "VAN_DS1_175",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_544",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-freeze-mage",
+      "version": 1,
+      "name": "Freeze Mage",
+      "class": "MAGE",
+      "hero": "HERO_08",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "combo",
+        "powerTier": 4,
+        "pilotDifficulty": 5,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "gold",
+          "legend"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Freeze Mage"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_024",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_031",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_023",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_026",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_028",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_295",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_289",
+          "count": 1
+        },
+        {
+          "id": "VAN_NEW1_021",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_007",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_012",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_096",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_279",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_029",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_561",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_559",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_027",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_284",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_275",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-midrange-shaman",
+      "version": 1,
+      "name": "Midrange Shaman",
+      "class": "SHAMAN",
+      "hero": "HERO_02",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 3,
+        "pilotDifficulty": 3,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "diamond"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Midrange Shaman"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_EX1_238",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_565",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_248",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_259",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_246",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_245",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_042",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_284",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_093",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_556",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_575",
+          "count": 1
+        },
+        {
+          "id": "VAN_NEW1_010",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_016",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_567",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_045",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_251",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_258",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-control-paladin",
+      "version": 1,
+      "name": "Control Paladin",
+      "class": "PALADIN",
+      "hero": "HERO_04",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "control",
+        "powerTier": 3,
+        "pilotDifficulty": 3,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "diamond"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Control Paladin, Equality at 2"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_EX1_619",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_093",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_097",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_094",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_092",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_349",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_382",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_354",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_384",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_383",
+          "count": 1
+        },
+        {
+          "id": "VAN_NEW1_020",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_007",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_032",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_284",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_298",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_016",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_558",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_005",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_093",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_203",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-control-priest",
+      "version": 1,
+      "name": "Control Priest",
+      "class": "PRIEST",
+      "hero": "HERO_09",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "control",
+        "powerTier": 3,
+        "pilotDifficulty": 4,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "silver",
+          "legend"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "June 2014 Control Priest"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_235",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_004",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_234",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_622",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS1_112",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_339",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS1_113",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_091",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_591",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_181",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_621",
+          "count": 2
+        },
+        {
+          "id": "VAN_NEW1_020",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_016",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_572",
+          "count": 1
+        },
+        {
+          "id": "VAN_EX1_558",
+          "count": 1
+        },
+        {
+          "id": "VAN_CS2_117",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_284",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_626",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-druid",
+      "version": 1,
+      "name": "Druid Starter",
+      "class": "DRUID",
+      "hero": "HERO_06",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_EX1_169",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_008",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_005",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_009",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_013",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_007",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_011",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_012",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_173",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_232",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-hunter",
+      "version": 1,
+      "name": "Hunter Starter",
+      "class": "HUNTER",
+      "hero": "HERO_05",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_084",
+          "count": 2
+        },
+        {
+          "id": "VAN_DS1_185",
+          "count": 2
+        },
+        {
+          "id": "VAN_DS1_175",
+          "count": 2
+        },
+        {
+          "id": "VAN_DS1_184",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_237",
+          "count": 2
+        },
+        {
+          "id": "VAN_NEW1_031",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_539",
+          "count": 2
+        },
+        {
+          "id": "VAN_DS1_070",
+          "count": 2
+        },
+        {
+          "id": "VAN_DS1_183",
+          "count": 2
+        },
+        {
+          "id": "VAN_DS1_178",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-mage",
+      "version": 1,
+      "name": "Mage Starter",
+      "class": "MAGE",
+      "hero": "HERO_08",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_EX1_277",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_027",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_025",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_024",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_023",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_026",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_029",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_022",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_033",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_032",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-paladin",
+      "version": 1,
+      "name": "Paladin Starter",
+      "class": "PALADIN",
+      "hero": "HERO_04",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_087",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_371",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_360",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_091",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_089",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_092",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_093",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_094",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_097",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_088",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-priest",
+      "version": 1,
+      "name": "Priest Starter",
+      "class": "PRIEST",
+      "hero": "HERO_09",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS1_130",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_003",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_004",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_234",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_622",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS1_112",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS1_113",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_196",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_124",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_147",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-rogue",
+      "version": 1,
+      "name": "Rogue Starter",
+      "class": "ROGUE",
+      "hero": "HERO_03",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_072",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_074",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_075",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_581",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_278",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_129",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_080",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_076",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_077",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_196",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-shaman",
+      "version": 1,
+      "name": "Shaman Starter",
+      "class": "SHAMAN",
+      "hero": "HERO_02",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_041",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_244",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_037",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_045",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_565",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_039",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_246",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_587",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_046",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_042",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-warlock",
+      "version": 1,
+      "name": "Warlock Starter",
+      "class": "WARLOCK",
+      "hero": "HERO_07",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_NEW1_003",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_308",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_063",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_302",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_065",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_306",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_061",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_057",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_062",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_064",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "npc-classic-starter-warrior",
+      "version": 1,
+      "name": "Warrior Starter",
+      "class": "WARRIOR",
+      "hero": "HERO_01",
+      "origin": "classic-curated",
+      "admission": "classic",
+      "tags": {
+        "archetype": "midrange",
+        "powerTier": 1,
+        "pilotDifficulty": 1,
+        "annoyance": 0,
+        "fun": 3,
+        "bands": [
+          "bronze",
+          "silver"
+        ]
+      },
+      "source": {
+        "site": "solostone",
+        "url": null,
+        "accessed": "2026-11-24",
+        "deckCode": null,
+        "changes": "Basic class cards and Basic neutrals"
+      },
+      "sideboards": [],
+      "cards": [
+        {
+          "id": "VAN_CS2_108",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_400",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_114",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_106",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_105",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_103",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_606",
+          "count": 2
+        },
+        {
+          "id": "VAN_EX1_084",
+          "count": 2
+        },
+        {
+          "id": "VAN_NEW1_011",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_112",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_172",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_120",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_182",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_179",
+          "count": 2
+        },
+        {
+          "id": "VAN_CS2_200",
+          "count": 2
+        }
+      ]
+    }
+  ]
+}

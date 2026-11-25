@@ -88,6 +88,17 @@ internal static class PluginSourcePins
         string formatLock = File.ReadAllText(Path.Combine(root, "plugin/NativeFormatLock.cs"));
         foreach (string required in new[] { "clickable.Active = false", "element.SetEnabled(true, true)", "renderer.SetPropertyBlock(greyBlock)" })
             if (!formatLock.Contains(required)) failures.Add("Format picker lock lost its native disabled state: " + required);
+        // Classic 2014 (docs/classic-2014.md): a Classic save's matches, picker and client format follow the save's meta.
+        foreach (var (file, required) in new[] {
+            ("plugin/NativeMatch.cs", "FormatType = ActiveMatchFormat.Format,"), ("plugin/NativeMatch.cs", "PoolFormat = ActiveMatchFormat.Pool,"),
+            ("plugin/NativeDeckEditorSave.cs", "internal const FormatType LocalDeckFormat = FormatType.FT_STANDARD;"),
+            ("plugin/NativeFormatLock.cs", "NativeUIProjection.RankedButtonMode(known.Mode)"),
+            ("plugin/NativeFormatWild.cs", "__0 == FormatType.FT_CLASSIC"), ("plugin/ClientBridge.cs", "\"m_nextFormatType\", NativeUIProbe.LocalDeckFormat"),
+            ("plugin/SelectedProfile.cs", "ActiveSaveMeta.Set(options.MetaId)"), ("plugin/NpcWorldBoot.cs", "ClassicNpcDecks.Ranked(classic)"),
+            ("plugin/NpcWorldBoot.cs", "ArenaDeckCatalog.ClassicResourceName"),
+            ("plugin/arena/DraftRules.cs", "ActiveSaveMeta.IsClassic ? ClassicVersion : VioletHoldVersion"), ("plugin/arena/ArenaService.cs", "var rules = DraftRules.Active;") })
+            if (!File.ReadAllText(Path.Combine(root, file)).Contains(required, StringComparison.Ordinal))
+                failures.Add("Classic save seam lost in " + file + ": " + required);
         string shopSource = File.ReadAllText(Path.Combine(root, "plugin/NativeShop.cs"));
         int openStart = shopSource.IndexOf("private static bool Open(Box __instance)", StringComparison.Ordinal);
         int openEnd = shopSource.IndexOf("private static Action<ShopType> BoxListener", openStart, StringComparison.Ordinal);

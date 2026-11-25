@@ -217,7 +217,15 @@ namespace SabberStoneCore.Model
 		/// </summary>
 		/// <param name="formatType"></param>
 		/// <returns></returns>
-		public static Dictionary<CardClass, IReadOnlyList<Card>> FormatTypeClassCards(FormatType formatType) => formatType == FormatType.FT_STANDARD ? Standard : Wild;
+		public static Dictionary<CardClass, IReadOnlyList<Card>> FormatTypeClassCards(FormatType formatType) => LegacyPoolFormat(formatType) == FormatType.FT_STANDARD ? Standard : Wild;
+
+		/// <summary>
+		/// The legacy (pinned, pre-manifest) random pools exist for Standard and Wild only. A Classic game draws from
+		/// GenerationFormat.Classic; reading a legacy pool for it fails loudly instead of drawing Wild cards.
+		/// </summary>
+		internal static FormatType LegacyPoolFormat(FormatType formatType) => formatType == FormatType.FT_CLASSIC
+			? throw new InvalidOperationException("Classic games have no legacy random pool.")
+			: formatType;
 
 		/// <summary>
 		/// Retrieves the specifified set of cards.
@@ -235,7 +243,12 @@ namespace SabberStoneCore.Model
 		/// </summary>
 		public static bool IsFormatLegal(Card card, FormatType formatType) =>
 			card != null && card.Collectible && card.Implemented && !card.Id.StartsWith("HERO", StringComparison.Ordinal) &&
-			(formatType == FormatType.FT_WILD || formatType == FormatType.FT_STANDARD && StandardSets.Contains(card.Set));
+			(formatType == FormatType.FT_CLASSIC ? card.Set == CardSet.VANILLA : card.Set != CardSet.VANILLA &&
+			 (formatType == FormatType.FT_WILD || formatType == FormatType.FT_STANDARD && StandardSets.Contains(card.Set)));
+
+		/// <summary>The Classic format's deck cards: every implemented collectible VANILLA card (docs/classic-2014.md).</summary>
+		public static IReadOnlyList<Card> Classic => _classic ?? (_classic = All.Where(c => IsFormatLegal(c, FormatType.FT_CLASSIC)).ToArray());
+		private static IReadOnlyList<Card> _classic;
 
 		/// <summary>
 		/// Returns the default hero class card.
@@ -326,7 +339,7 @@ namespace SabberStoneCore.Model
 		/// </summary>
 		/// <param name="formatType"></param>
 		/// <returns></returns>
-		public static Dictionary<int, List<Card>> CostMinionCards(FormatType formatType) => formatType == FormatType.FT_STANDARD ? StandardCostMinionCards : WildCostMinionCards;
+		public static Dictionary<int, List<Card>> CostMinionCards(FormatType formatType) => LegacyPoolFormat(formatType) == FormatType.FT_STANDARD ? StandardCostMinionCards : WildCostMinionCards;
 
 		private static readonly Dictionary<int, List<Card>> StandardCostMinionCards;
 		private static readonly Dictionary<int, List<Card>> WildCostMinionCards;
@@ -341,6 +354,8 @@ namespace SabberStoneCore.Model
 		{
 			return Data.Cards[cardId];
 		}
+
+		internal static bool TryFromId(string cardId, out Card card) => Data.Cards.TryGetValue(cardId, out card);
 
 		/// <summary>
 		/// Returns the first collectible card that matches the provided name.

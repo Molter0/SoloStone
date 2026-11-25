@@ -222,10 +222,11 @@ public sealed class LocalShop
     private readonly Dictionary<string, LocalShopProduct> recipeProducts;
     private readonly Dictionary<string, string> heroSkinClasses;
     private readonly Lazy<RecipeLibrary> library;
-    private static readonly Lazy<LocalShop> instance = new Lazy<LocalShop>(() => {
+    // One shop per save meta: a Classic save's shop (ForClassic) sells the Classic pack and no Violet Hold pack or deck.
+    private static readonly MetaLazy<LocalShop> instance = new MetaLazy<LocalShop>(() => {
         var assembly = typeof(LocalShop).Assembly;
         using (var products = assembly.GetManifestResourceStream("SoloStone.Shop.catalog-v1.json"))
-            return Load(products, () => {
+            return ActiveSaveMeta.IsClassic ? Load(products, () => RecipeLibrary.Empty(ClassicRecipeBuild), ForClassic) : Load(products, () => {
                 using (var recipes = assembly.GetManifestResourceStream("SoloStone.Shop.recipes-v1.json")) {
                     if (recipes == null) throw new InvalidOperationException("Missing recipe library resource.");
                     using (var reader = new StreamReader(recipes)) return RecipeLibrary.LoadText(reader.ReadToEnd());
@@ -308,7 +309,22 @@ public sealed class LocalShop
         try { return Library.IsWithheld(product.RecipeId); }
         catch (InvalidOperationException) { return false; }
     }
-    internal static LocalShop Load(Stream catalog, Func<RecipeLibrary> loadRecipes) {
+    // Classic 2014 (docs/classic-2014.md): the Classic pack, gold only like every pack. Five cards of the Classic pool at the
+    // fair-pack rarities (FairPackRules.Classic). No real money exists anywhere in SoloStone.
+    internal const string ClassicPackProductId = "pack-classic";
+    internal const int ClassicPackPrice = 100;
+    private const string ClassicRecipeBuild = "37.0.0.254477";
+    internal static LocalShopProduct ClassicPackProduct() => new LocalShopProduct { Id = ClassicPackProductId, Kind = "Pack",
+        Price = ClassicPackPrice, MinQuantity = 1, MaxQuantity = 50, PackType = FairPackRules.Classic,
+        Description = "Five Normal Classic cards (June 2014); Rare or better guaranteed. Legendary within first 10, then within 40 packs; Epic within 10." };
+    // A Classic save's catalogue: the Violet Hold packs, recipes and ready-made decks give way to the Classic pack; cosmetics stay.
+    internal static void ForClassic(LocalShopCatalog catalog) {
+        if (catalog.Products == null) return;
+        catalog.Products = catalog.Products.Where(p => p == null || (p.Kind != "Pack" && p.Kind != "Recipe" && p.Kind != "Deck"))
+            .Concat(new[] { ClassicPackProduct() }).ToList();
+    }
+    internal static LocalShop Load(Stream catalog, Func<RecipeLibrary> loadRecipes) => Load(catalog, loadRecipes, null);
+    internal static LocalShop Load(Stream catalog, Func<RecipeLibrary> loadRecipes, Action<LocalShopCatalog> adjust) {
         if (catalog == null) throw new InvalidOperationException("Missing shop catalogue resource.");
         var root = EmbeddedJson.Object(EmbeddedJson.Read(catalog));
         root.TryGetValue("Products", out object products);
@@ -381,6 +397,7 @@ public sealed class LocalShop
                 parsed.PetThresholds.Add(pet, thresholds); parsed.PetMatchXp.Add(pet, matchXp);
             }
         }
+        adjust?.Invoke(parsed);
         return new LocalShop(parsed, loadRecipes);
     }
     public static LocalShop Load(Stream catalog, Stream recipes) {
@@ -568,11 +585,11 @@ public sealed class LocalShop
             default: throw new InvalidOperationException("Card is not sold by the shop.");
         }
     }
-    // Pack catalogue and active meta are process constants; rebuild these together if runtime reload is introduced.
-    private static readonly Lazy<HashSet<CardSet>> standardSets = new Lazy<HashSet<CardSet>>(() =>
+    // One per save meta, like the pack catalogue it reads.
+    private static readonly MetaLazy<HashSet<CardSet>> standardSets = new MetaLazy<HashSet<CardSet>>(() =>
         new HashSet<CardSet>(FairPackRules.Eligible(FairPackRules.Standard, FairPackRules.RuleVersion).Select(card => card.Set)));
 #if ENGINE_SOURCE
-    private static readonly Lazy<HashSet<string>> activeExtraIds = new Lazy<HashSet<string>>(() =>
+    private static readonly MetaLazy<HashSet<string>> activeExtraIds = new MetaLazy<HashSet<string>>(() =>
         new HashSet<string>(LocalCardCatalog.ActiveMetaExtraCards, StringComparer.Ordinal));
     internal static bool IsActiveExtraCard(string id) => activeExtraIds.Value.Contains(id);
 #endif
@@ -584,7 +601,14 @@ public sealed class LocalShop
 #else
         && (LocalCardCatalog.IsCore(card.Id) || standardSets.Value.Contains(card.Set));
 #endif
-    internal static IEnumerable<EngineCard> StandardCollectionCards =>
+    internal static IEnumerable<EngineCard> ClassicCollectionCards =>
+#if ENGINE_SOURCE
+        Cards.Classic;
+#else
+        Enumerable.Empty<EngineCard>();
+#endif
+    // A Classic save's collection is the Classic cards (docs/classic-2014.md).
+    internal static IEnumerable<EngineCard> StandardCollectionCards => ActiveSaveMeta.IsClassic ? ClassicCollectionCards :
         FairPackRules.Eligible(FairPackRules.Standard, FairPackRules.RuleVersion)
 #if ENGINE_SOURCE
         // Pack exclusions still belong to the collection and can be bought in ready-made decks.
@@ -1020,11 +1044,11 @@ public sealed partial class LocalProfile
     private static int Playset(string id) => LocalEconomy.PlayableCap(Cards.FromId(id) ?? throw new InvalidOperationException("Unknown ledger card."));
     // Historical receipts and counts are bounded by the largest playset, not by a card's current rarity.
     private const int MaximumPlayset = LocalEconomy.MaximumPlayset;
-    private static readonly Lazy<Dictionary<string, string>> cardPackTypes = new Lazy<Dictionary<string, string>>(() =>
+    private static readonly MetaLazy<Dictionary<string, string>> cardPackTypes = new MetaLazy<Dictionary<string, string>>(() =>
         FairPackRules.PackTypes.Where(type => type != FairPackRules.Standard)
             .SelectMany(type => FairPackRules.Eligible(type, FairPackRules.RuleVersion).Select(card => new { card.Id, Type = type }))
             .ToDictionary(card => card.Id, card => card.Type, StringComparer.Ordinal));
-    private static readonly Lazy<Dictionary<string, HashSet<string>>> packCardIds = new Lazy<Dictionary<string, HashSet<string>>>(() =>
+    private static readonly MetaLazy<Dictionary<string, HashSet<string>>> packCardIds = new MetaLazy<Dictionary<string, HashSet<string>>>(() =>
         FairPackRules.PackTypes.ToDictionary(type => type, type =>
             new HashSet<string>(FairPackRules.Eligible(type, FairPackRules.RuleVersion).Select(card => card.Id), StringComparer.Ordinal), StringComparer.Ordinal));
     internal static string CardPackType(string id) => id != null && cardPackTypes.Value.TryGetValue(id, out string type) ? type : null;
@@ -1044,7 +1068,7 @@ public sealed partial class LocalProfile
         if (!LocalDecks.PlayerHeroes.Contains(hero)) throw new InvalidOperationException("Unsupported local hero.");
         return LedgerDeck(name, hero, ids, sideboards, true);
     }
-    private static readonly Lazy<EngineCard[]> ledgerCards = new Lazy<EngineCard[]>(() => LocalCardCatalog.Current
+    private static readonly MetaLazy<EngineCard[]> ledgerCards = new MetaLazy<EngineCard[]>(() => LocalCardCatalog.Current
         .Concat(LocalShop.StandardCollectionCards)
 #if ENGINE_SOURCE
         // Fabled companions are deck cards outside the collectible pack pool.
@@ -1055,7 +1079,7 @@ public sealed partial class LocalProfile
         .GroupBy(c => c.Id).Select(g => g.First()).ToArray());
     private static IEnumerable<EngineCard> LedgerCards => ledgerCards.Value;
     // Private dictionaries/sets are built once and never mutated; meta/catalogue cannot reload in this process.
-    private static readonly Lazy<Dictionary<string, EngineCard>> ledgerCardIndex = new Lazy<Dictionary<string, EngineCard>>(() =>
+    private static readonly MetaLazy<Dictionary<string, EngineCard>> ledgerCardIndex = new MetaLazy<Dictionary<string, EngineCard>>(() =>
         ledgerCards.Value.ToDictionary(card => card.Id, StringComparer.Ordinal));
     private static Dictionary<string, EngineCard> LedgerCardIndex => ledgerCardIndex.Value;
     // A collectible CORE_ id stays known even when it is not Standard (#87): an older save may hold one (the old creation
@@ -1233,9 +1257,11 @@ public sealed partial class LocalProfile
             || p.Trophies.Select(t => t.Id).Distinct().Count() != p.Trophies.Count)
             throw new InvalidOperationException("Invalid milestone reservation.");
         // Historical V1 receipts keep validating; V2 adds actual card grants. The kit may be redeemed.
-        var welcomeKits = p.DeckKits.Where(k => k.Id == LocalWelcomeGift.KitId || k.MilestoneId == LocalWelcomeGift.KitMilestoneId).ToList();
-        if (p.Welcome != null ? !LocalWelcomeGift.IsKnown(p.Welcome) || welcomeKits.Count != 1 || welcomeKits[0].Id != LocalWelcomeGift.KitId
-                || welcomeKits[0].MilestoneId != LocalWelcomeGift.KitMilestoneId || welcomeKits[0].GoldCap != LocalWelcomeGift.KitGoldCap
+        // A Classic welcome receipt has no kit (KitId null), so the save holds no welcome kit either.
+        var welcomeKits = p.DeckKits.Where(k => k.Id == LocalWelcomeGift.StandardKitId || k.MilestoneId == LocalWelcomeGift.KitMilestoneId).ToList();
+        if (p.Welcome != null ? !LocalWelcomeGift.IsKnown(p.Welcome) || (p.Welcome.KitId == null ? welcomeKits.Count != 0
+                : welcomeKits.Count != 1 || welcomeKits[0].Id != p.Welcome.KitId
+                || welcomeKits[0].MilestoneId != LocalWelcomeGift.KitMilestoneId || welcomeKits[0].GoldCap != p.Welcome.KitGoldCap)
             : welcomeKits.Count != 0)
             throw new InvalidOperationException("Invalid welcome gift receipt.");
         ValidateWelcomeCards(p.Welcome);

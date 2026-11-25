@@ -51,10 +51,22 @@ namespace SabberStoneCore.Model
         internal static string[] Ids(string name) => Inputs[name]
             .Select(identity => identity.Substring(0, identity.LastIndexOf(':'))).ToArray();
 
-        // Resolve entourage identities only when selected, as before.
-        internal static string[] Entourage(Card source) => Inputs.ContainsKey("Entourage/" + source.Id)
-            ? Ids("Entourage/" + source.Id) : Array.Empty<string>();
+        // Resolve entourage identities only when selected, as before. A card that reuses another card's behaviour (a Classic
+        // VAN_ card) has no list of its own: it takes its original's list, each entry swapped for the same card's VAN_
+        // version where one exists (Classic Animal Companion summons the Classic Misha, Leokk or Huffer).
+        internal static string[] Entourage(Card source)
+        {
+            if (Inputs.ContainsKey("Entourage/" + source.Id)) return Ids("Entourage/" + source.Id);
+            // Classic only: other reprints that borrow a behaviour keep what they drew before (recorded games depend on it).
+            // The original comes from the Classic alias registry, not a new Card field: snapshot schemas hash every Card field.
+            if (source.Set != CardSet.VANILLA
+                || !CardSets.Client.Classic2014.ByDbfId.TryGetValue(source.AssetId, out int originDbf)) return Array.Empty<string>();
+            string origin = Cards.FromAssetId(originDbf)?.Id;
+            if (origin == null || !Inputs.ContainsKey("Entourage/" + origin)) return Array.Empty<string>();
+            return Ids("Entourage/" + origin).Select(id =>
+                Cards.TryFromId("VAN_" + id, out Card version) && version.Set == CardSet.VANILLA ? version.Id : id).ToArray();
+        }
 
-        internal static string Format(FormatType format) => format == FormatType.FT_STANDARD ? "Standard" : "Wild";
+        internal static string Format(FormatType format) => Cards.LegacyPoolFormat(format) == FormatType.FT_STANDARD ? "Standard" : "Wild";
     }
 }

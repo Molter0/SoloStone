@@ -343,6 +343,6 @@ internal static class ArenaMatchChecks
         }
         Check(rows.Select(r => r.Class).Distinct().Count() >= 8 && rows.Select(r => r.Skill).Distinct().Count() == ArenaDeckGenerator.Skills.Length, "mixed classes and drafter skill");
         double Mean(double skill) => rows.Where(r => r.Skill == skill).Average(r => r.Quality);
-        Check(Mean(0.95) > Mean(0.15), "strong drafters score higher");
+        Check(Mean(ArenaDeckGenerator.Skills.Last()) > Mean(ArenaDeckGenerator.Skills.First()), "strong drafters score higher");
     }
 }

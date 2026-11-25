@@ -8,7 +8,7 @@
     <!-- World climb simulation (WP4): the real matchmaker over a synthetic NPC world. These are the sources tests/npc-world links. -->
     <Compile Include="../../plugin/LocalDecks.cs" Link="LocalDecks.cs" />
     <Compile Include="../../plugin/LocalDeckCards.cs" Link="LocalDeckCards.cs" />
-    <Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" />
+    <Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" /><Compile Include="../../plugin/ActiveSaveMeta.cs" Link="ActiveSaveMeta.cs" />
     <Compile Include="../../plugin/FairBotState.cs" Link="FairBotState.cs" />
     <Compile Include="../../plugin/BotSearch.cs" Link="BotSearch.cs" />
     <Compile Include="../../plugin/BotDriver.cs" Link="BotDriver.cs" />

@@ -63,7 +63,7 @@ internal static partial class NativeUIProbe
         bool allowed = NativeUIProjection.CanCreateDraft(deckType == DeckType.NORMAL_DECK,
             NativeUIProjection.OwnsCreateSource(deckSourceType == DeckSourceType.DECK_SOURCE_TYPE_NORMAL,
                 deckSourceType == DeckSourceType.DECK_SOURCE_TYPE_PASTED_DECK, pastedDeckHashString != null, import != null),
-            hero != null && Heroes.Contains(hero), Options.GetFormatType() == LocalDeckFormat,
+            hero != null && Heroes.Contains(hero) && NativeUIProjection.ClassicAllowsHero(hero), Options.GetFormatType() == LocalDeckFormat,
             Profile.CustomDecks.Count, SessionLoanerKeys().Count());
         // The import never switches the format: the client's own format change on paste is coerced back by NativeFormatLock.
         if (import != null && hero != null && hero != import.Hero) allowed = false;

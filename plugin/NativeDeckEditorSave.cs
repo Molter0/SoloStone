@@ -9,6 +9,10 @@ internal static partial class NativeUIProbe
     // SoloStone presents Standard everywhere: every local deck header, the picker, ladder medal and results screens.
     // Offline the client has no set-rotation timings, so it classes every set Standard; the engine (always FT_WILD
     // internally) and LocalDecks/LocalCardCatalog keep enforcing the real meta pool. Not persisted: profiles store no format.
+    // Classic 2014 (docs/classic-2014.md): a Classic save shows the client Standard too. The 37.0 client has no working
+    // Classic mode (no picker button; its deck tray stays Standard and refuses FT_CLASSIC decks), and June 2014 had no
+    // formats anyway. The client's Standard check accepts the VAN cards in a Classic save (NativeUIProjection.NativeCardIsWild),
+    // and the engine still plays FT_CLASSIC with the classic pool (ActiveMatchFormat).
     internal const FormatType LocalDeckFormat = FormatType.FT_STANDARD;
 
     // Live 2026-10-30: offline the client has no server-delivered King of the Underbelly subset (ALLOWED_SIDEBOARD_SUBSET

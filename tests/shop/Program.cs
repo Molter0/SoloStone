@@ -45,6 +45,8 @@ try {
     LegacyCosmeticsTests.Run(root);
     TieredCosmeticsTests.Run(root, Check, Reject);
     RecipeAvailabilityTests.Run(root);
+    // Before the cosmetics fixture, which replaces LocalShop.Default for the rest of the run.
+    ClassicPackTests.Run(Check, Reject, root);
     using var cosmetics = new CosmeticsFixture();
     CatalogueIndexTests.Run(Check);
     ProfilePerformanceTests.Run(root);

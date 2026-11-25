@@ -35,6 +35,12 @@ internal static partial class NativeUIProbe
     {
         if (__0 == FormatType.FT_STANDARD) return AnswerWild(__1, wild => !wild, ref __result);
         if (__0 == FormatType.FT_WILD) return AnswerWild(__1, wild => true, ref __result);
+        // Classic 2014: in a Classic save the Classic format holds the VAN cards alone (docs/classic-2014.md).
+        if (__0 == FormatType.FT_CLASSIC) {
+            bool? classic = NativeUIProjection.NativeCardIsClassic(active, __1?.GetCardId());
+            if (!classic.HasValue) return true;
+            __result = classic.Value; return false;
+        }
         return true;
     }
 

@@ -108,6 +108,13 @@ public sealed class RecipeLibrary
 
     public static RecipeLibrary Load(string path) => LoadText(File.ReadAllText(path));
 
+    // Classic 2014 (docs/classic-2014.md): a Classic save's shop sells no recipe, so its library is empty on purpose.
+    private bool emptyByDesign;
+    internal static RecipeLibrary Empty(string clientBuild) => new RecipeLibrary {
+        Schema = 1, LibraryVersion = 1, ClientBuild = clientBuild, Recipes = Array.AsReadOnly(new DeckRecipe[0]),
+        emptyByDesign = true, poolIds = new HashSet<string>(StringComparer.Ordinal),
+        recipesById = new Dictionary<string, DeckRecipe>(StringComparer.Ordinal) };
+
     public static RecipeLibrary LoadText(string text)
     {
         var root = Object(EmbeddedJson.Parse(text));
@@ -137,7 +144,7 @@ public sealed class RecipeLibrary
     }
 #if ENGINE_SOURCE
     // Installed policy and active meta are immutable for this process; each library still checks ClientBuild.
-    private static readonly Lazy<HashSet<string>> installedPoolIds = new Lazy<HashSet<string>>(() => {
+    private static readonly MetaLazy<HashSet<string>> installedPoolIds = new MetaLazy<HashSet<string>>(() => {
         var ids = new HashSet<string>(OfflinePoolPolicy.Load().Members.Where(row => row.Scope == "Standard").Select(row => row.CardId), StringComparer.Ordinal);
         ids.UnionWith(SabberStoneCore.CardSets.Client.StandardSets.CollectibleIds);
         ids.UnionWith(LocalDecks.LegalDeckbuildingCards.Select(card => card.Id));
@@ -184,7 +191,7 @@ public sealed class RecipeLibrary
         var errors = new List<string>();
         if (Schema != 1) errors.Add("Unsupported recipe schema.");
         if (LibraryVersion < 1) errors.Add("Invalid libraryVersion.");
-        if (Recipes.Count == 0) errors.Add("Recipe library is empty.");
+        if (Recipes.Count == 0 && !emptyByDesign) errors.Add("Recipe library is empty.");
         foreach (var group in Recipes.Concat(Withheld).GroupBy(recipe => recipe?.Id, StringComparer.Ordinal))
             if (group.Count() > 1) errors.Add("Duplicate recipe id: " + group.Key);
         foreach (var recipe in Recipes) errors.AddRange(Validate(recipe));

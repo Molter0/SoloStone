@@ -10,9 +10,9 @@ public sealed partial class LocalProfile
     private const int DiamondQualityTag = 1932, SignatureQualityTag = 2589;
     // "All cards owned" = every card The Complete Works counts (the Standard collection, pack exclusions included) plus
     // the supported/deckbuilding cards. Hero-type collection cards such as CATA_190h count; base hero portraits do not.
-    private static readonly Lazy<HashSet<string>> collectionCardIds = new Lazy<HashSet<string>>(() =>
+    private static readonly MetaLazy<HashSet<string>> collectionCardIds = new MetaLazy<HashSet<string>>(() =>
         new HashSet<string>(LocalShop.StandardCollectionCards.Where(card => card != null).Select(card => card.Id), StringComparer.Ordinal));
-    private static readonly Lazy<EngineCard[]> supportedCheatCards = new Lazy<EngineCard[]>(() => LocalCardCatalog.Supported
+    private static readonly MetaLazy<EngineCard[]> supportedCheatCards = new MetaLazy<EngineCard[]>(() => LocalCardCatalog.Supported
         .Concat(LocalDecks.LegalDeckbuildingCards)
         .Concat(FairPackRules.PackTypes.SelectMany(type => FairPackRules.Eligible(type, FairPackRules.RuleVersion)))
         .Concat(LocalShop.StandardCollectionCards)
@@ -20,7 +20,7 @@ public sealed partial class LocalProfile
             && (card.Type != CardType.HERO || collectionCardIds.Value.Contains(card.Id) && !LocalCoreProgression.Heroes.Contains(card.Id)))
         .GroupBy(card => card.Id, StringComparer.Ordinal).Select(group => group.First())
         .OrderBy(card => card.Id, StringComparer.Ordinal).ToArray());
-    private static readonly Lazy<LocalCardCount[]> supportedCheatPremium = new Lazy<LocalCardCount[]>(() => {
+    private static readonly MetaLazy<LocalCardCount[]> supportedCheatPremium = new MetaLazy<LocalCardCount[]>(() => {
         var rows = new List<LocalCardCount>();
         foreach (var card in supportedCheatCards.Value)
         {
@@ -35,8 +35,8 @@ public sealed partial class LocalProfile
             rows.Add(new LocalCardCount { Id = hero, Premium = 1, Count = 1, Acquired = 1 });
         return rows.ToArray();
     });
-    private static readonly Lazy<Dictionary<string, int>> supportedCheatPremiumCounts =
-        new Lazy<Dictionary<string, int>>(() => supportedCheatPremium.Value.ToDictionary(
+    private static readonly MetaLazy<Dictionary<string, int>> supportedCheatPremiumCounts =
+        new MetaLazy<Dictionary<string, int>>(() => supportedCheatPremium.Value.ToDictionary(
             row => PremiumKey(row.Id, row.Premium), row => row.Count, StringComparer.Ordinal));
 
     internal static IReadOnlyList<EngineCard> SupportedCheatCards => supportedCheatCards.Value;
@@ -168,7 +168,7 @@ public sealed partial class LocalProfile
     // All welcome assets and their receipt land in the same creation commit.
     private static void ApplyWelcome(LocalProfileData next)
     {
-        if (next.Welcome != null || next.DeckKits.Any(kit => kit.Id == LocalWelcomeGift.KitId))
+        if (next.Welcome != null || next.DeckKits.Any(kit => kit.Id == LocalWelcomeGift.StandardKitId))
             throw new InvalidOperationException("The welcome gift was already granted.");
         next.Welcome = new LocalWelcome { Version = LocalWelcomeGift.Version, PackType = LocalWelcomeGift.PackType,
             Packs = LocalWelcomeGift.Packs, Gold = LocalWelcomeGift.Gold, Dust = LocalWelcomeGift.Dust,
@@ -176,8 +176,9 @@ public sealed partial class LocalProfile
         AddPacks(next, LocalWelcomeGift.PackType, LocalWelcomeGift.Packs);
         next.GoldBalance = checked(next.GoldBalance + LocalWelcomeGift.Gold);
         next.DustBalance = checked(next.DustBalance + LocalWelcomeGift.Dust);
-        next.DeckKits.Add(new LocalDeckKit { Id = LocalWelcomeGift.KitId, MilestoneId = LocalWelcomeGift.KitMilestoneId,
-            GoldCap = LocalWelcomeGift.KitGoldCap });
+        if (LocalWelcomeGift.KitId != null)
+            next.DeckKits.Add(new LocalDeckKit { Id = LocalWelcomeGift.KitId, MilestoneId = LocalWelcomeGift.KitMilestoneId,
+                GoldCap = LocalWelcomeGift.KitGoldCap });
         foreach (var definition in LocalWelcomeGift.Cards)
         {
             var collection = definition.Premium == 0 ? next.Collection : next.PremiumCollection;

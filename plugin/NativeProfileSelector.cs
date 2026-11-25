@@ -563,7 +563,8 @@ internal sealed class NativeProfileMenu : ButtonListMenu
         {
             var captured = slot;
             string difficulty = NativeProfileSelector.SlotDifficulty(slot.Id);
-            string label = slot.Name + " · " + (difficulty == null ? "Unknown difficulty" : NpcDifficultyIds.Name(difficulty)) + (slot.Unavailable == null ? "" : " (unavailable: " + slot.Unavailable + ")");
+            string label = slot.Name + " · " + (difficulty == null ? "Unknown difficulty" : NpcDifficultyIds.Name(difficulty))
+            + (slot.MetaId == ActiveSaveMeta.Classic ? " · Classic" : "") + (slot.Unavailable == null ? "" : " (unavailable: " + slot.Unavailable + ")");
             if (manage) { ManageRow(captured, label, slot.Id == selected, NativeProfileSelector.IsOpenSave(slot.Id, selected)); continue; }
             UIBButton row = Plank("ProfileSlot-" + slot.Id, "save.slot:" + slot.Id, label, _ => {
                 if (captured.Unavailable != null) return;
@@ -638,10 +639,20 @@ internal sealed class NativeProfileMenu : ButtonListMenu
         if (name == null) { Label("ProfileNameLabel", "Save name", LabelColor, 1); var plank = Plank("ProfileName", "save.name", saveName, _ => EditName()); name = plank; nameText = ProfileFormKit.Label(plank); }
         else { controls[name] = "save.name"; name.AddEventListener(UIEventType.RELEASE, _ => { if (!Locked()) EditName(); }); }
         nameColor = ProfileFormKit.GetColor(nameText);
-        PegUIElement meta = Plate("ProfileMeta", "Meta", ProfileCatalog.MetaLabel, out _);
-        if (meta == null) meta = Plank("ProfileMeta", null, ProfileCatalog.MetaLabel, _ => { });
-        controls[meta] = "save.meta.violet-hold";
+        // Classic 2014 (docs/classic-2014.md): the Meta plate shows the new save's meta; a click switches it between Violet
+        // Hold and Classic. It is fixed once the save exists (ProfileOptions.MetaId).
+        string metaId = ActiveSaveMeta.Normalize(options.MetaId);
+        PegUIElement meta = Plate("ProfileMeta", "Meta", ActiveSaveMeta.Label(metaId), out _);
+        if (meta == null) meta = Plank("ProfileMeta", null, ActiveSaveMeta.Label(metaId), _ => { });
+        controls[meta] = "save.meta." + metaId;
         ConfigureMeta(meta);
+        meta.SetEnabled(UIEventType.RELEASE, true);
+        meta.AddEventListener(UIEventType.RELEASE, _ => {
+            if (Locked()) return;
+            options.MetaId = metaId == ActiveSaveMeta.Classic ? ActiveSaveMeta.VioletHold : ActiveSaveMeta.Classic;
+            NativeProfileSelector.Log("SAVE_FORM meta " + options.MetaId);
+            Build();
+        });
         PaceRows(kit, "save.pace:", () => GrindTiers.Find(options.GrindTier), tier => options.GrindTier = tier.Id);
         DifficultyRows(kit, "save.difficulty:", () => options.NpcDifficulty, id => options.NpcDifficulty = id);
         // Sandbox keeps its own one-line pitch; Pace reserves explicit two-line slices.
@@ -1066,7 +1077,7 @@ internal sealed class NativeProfileMenu : ButtonListMenu
         NativeProfileSelector.Create(saveName, options);
     }
 
-    // Hover-only: the one available meta is shown as a value; the tooltip says the others are not done yet.
+    // The meta is shown as a value with a tooltip; BuildWizard adds the click that switches it (Classic 2014).
     private void ConfigureMeta(PegUIElement meta)
     {
         selectedControls.Add(meta);
@@ -1079,7 +1090,7 @@ internal sealed class NativeProfileMenu : ButtonListMenu
         meta.AddEventListener(UIEventType.ROLLOVER, _ => {
             traceHover = tooltipTraceCount++ < 4;
             if (traceHover) NativeProfileSelector.TraceTooltip("enter", meta, tooltip);
-            tooltip.ShowBoxTooltip("Meta", ProfileCatalog.BacklogTooltip);
+            tooltip.ShowBoxTooltip("Meta", ProfileCatalog.MetaTooltip);
             // Match GameMenuSignUpButton's post-show remap without a compile-time GameLayer dependency.
             tooltipLayer.SetValue(tooltip, Enum.ToObject(tooltipLayer.PropertyType, meta.gameObject.layer), null);
             // Native social menu tooltips sit beside their row, not inside its rendered face.

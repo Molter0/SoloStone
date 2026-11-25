@@ -264,7 +264,7 @@ internal static class NativeAchievements
         if (reward.Dust > 0) AddReward(list, new RewardItemDataModel { ItemType = RewardItemType.DUST, Quantity = reward.Dust }, feat);
         if (reward.StandardPacks > 0)
             AddReward(list, new RewardItemDataModel { ItemType = RewardItemType.BOOSTER, Quantity = reward.StandardPacks,
-                ItemId = FairPackRules.NativeBoosterId(FairPackRules.Standard) }, feat);
+                ItemId = FairPackRules.NativeBoosterId(FairPackRules.MainPackType) }, feat);
         if (reward.CardBackId > 0) AddReward(list, new RewardItemDataModel { ItemType = RewardItemType.CARD_BACK, ItemId = reward.CardBackId }, feat);
         if (reward.HeroSkinId != null)
             AddReward(list, new RewardItemDataModel { ItemType = RewardItemType.HERO_SKIN, Quantity = 1,

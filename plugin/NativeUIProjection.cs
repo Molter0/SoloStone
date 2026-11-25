@@ -145,6 +145,8 @@ internal static class NativeUIProjection
         if (!active || cardId == null) return null;
         lock (nativeWild)
         {
+            // Memoized per save meta (a Classic save answers differently).
+            if (nativeWildMeta != ActiveSaveMeta.Current) { nativeWild.Clear(); nativeWildMeta = ActiveSaveMeta.Current; }
             if (nativeWild.TryGetValue(cardId, out bool? known)) return known;
             SabberStoneCore.Model.Card card;
             try { card = SabberStoneCore.Model.Cards.FromId(cardId); } catch (KeyNotFoundException) { card = null; }
@@ -164,6 +166,17 @@ internal static class NativeUIProjection
     private static readonly Lazy<HashSet<int>> engineCardSets = new Lazy<HashSet<int>>(() => new HashSet<int>(
         SabberStoneCore.Model.Cards.All.Where(card => card.Collectible && card.Type != SabberStoneCore.Enums.CardType.HERO)
             .Select(card => (int)card.Set)) { NativeLegacySet });
+    private static string nativeWildMeta;
+    // FT_CLASSIC (Classic 2014): in a Classic save a card is in the format when it is a Classic (VAN) card. Null leaves the
+    // client's own answer (another save, or not a collectible engine card).
+    internal static bool? NativeCardIsClassic(bool active, string cardId)
+    {
+        if (!active || cardId == null || !ActiveSaveMeta.IsClassic) return null;
+        SabberStoneCore.Model.Card card;
+        try { card = SabberStoneCore.Model.Cards.FromId(cardId); } catch (KeyNotFoundException) { card = null; }
+        if (card == null || !card.Collectible || card.Type == SabberStoneCore.Enums.CardType.HERO) return null;
+        return LocalCardCatalog.IsClassicCard(card);
+    }
     internal static bool? NativeSetIsRotated(bool active, int setId)
     {
         if (!active || setId == 0 || LocalCardCatalog.IsUnreleasedMetaSet(setId) || !engineCardSets.Value.Contains(setId)) return null;
@@ -256,7 +269,18 @@ internal static class NativeUIProjection
     // Native GameUtils.GetAllCollectibleCardIds: CollectionManager.InitImpl registers a Normal and a Golden collectible
     // entry for each id. Cards outside it exist natively only once owned (from the collection packet) and only in the
     // owned version, so they never list as missing and CanUpgradeCardToGolden answers NotUpgradable.
-    internal static List<string> NativeCollectiblePool(IEnumerable<string> craftable, IEnumerable<LocalCardCount> owned = null) => Supported.Concat(CosmeticHeroPool)
+    // A Classic save's pool is its Classic cards (docs/classic-2014.md), not the Violet Hold ones.
+    private static IEnumerable<string> ActiveSupported => ActiveSaveMeta.IsClassic ? ClassicCollectible : Supported;
+    // A set: the client asks IsNativeCollectible once per deck slot.
+    private static HashSet<string> ClassicCollectible => classicCollectible.Value;
+    private static readonly Lazy<HashSet<string>> classicCollectible = new Lazy<HashSet<string>>(() => new HashSet<string>(
+#if ENGINE_SOURCE
+        SabberStoneCore.Model.Cards.Classic.Select(card => card.Id),
+#else
+        Enumerable.Empty<string>(),
+#endif
+        StringComparer.Ordinal));
+    internal static List<string> NativeCollectiblePool(IEnumerable<string> craftable, IEnumerable<LocalCardCount> owned = null) => ActiveSupported.Concat(CosmeticHeroPool)
         .Concat(craftable ?? Enumerable.Empty<string>()).Concat(OwnedGrantOnlyIds(owned))
         .Distinct(StringComparer.Ordinal).OrderBy(id => id).ToList();
     private static bool AdmittedGrantOnly(string id) => LocalWelcomeGift.HistoricalCardIds.Contains(id)
@@ -265,7 +289,8 @@ internal static class NativeUIProjection
         (owned ?? Enumerable.Empty<LocalCardCount>()).Where(card => card.Count > 0 && AdmittedGrantOnly(card.Id)).Select(card => card.Id);
     // Deck-slot collectibility: native EvaluateSlot checks it before ownership, so narrowing it turns missing cards
     // (blue ghosts) into invalid ones. Keep the historical predicate and only add owned admitted grants.
-    internal static bool IsNativeCollectible(string id, LocalProfile profile) =>
+    internal static bool IsNativeCollectible(string id, LocalProfile profile) => ActiveSaveMeta.IsClassic
+        ? ClassicCollectible.Contains(id) || CosmeticHeroPool.Contains(id) :
         Supported.Contains(id) || LocalDecks.TestStandardCardIds.Contains(id) || CosmeticHeroPool.Contains(id)
         || (AdmittedGrantOnly(id) && profile.TotalOwnedCount(id) > 0);
     internal static readonly HashSet<string> Supported = new HashSet<string>(LocalEconomy.Catalog.Select(c => c.Id)
@@ -273,7 +298,9 @@ internal static class NativeUIProjection
         .Concat(ProofDecks.Get("proof-mage").CardIds).Concat(ProofDecks.Get("proof-warrior").CardIds)
 #endif
         , StringComparer.Ordinal);
-    private static readonly Dictionary<string, SabberStoneCore.Model.Card> PreviewCards = LocalDecks.CustomCards
+    // Per save meta: LocalDecks.CustomCards follows the meta, so a first touch inside a Classic scope must not fix it for good.
+    private static Dictionary<string, SabberStoneCore.Model.Card> PreviewCards => previewCards.Value;
+    private static readonly MetaLazy<Dictionary<string, SabberStoneCore.Model.Card>> previewCards = new MetaLazy<Dictionary<string, SabberStoneCore.Model.Card>>(() => LocalDecks.CustomCards
         .Concat(LocalDecks.TestStandardCardIds.Select(SabberStoneCore.Model.Cards.FromId))
 #if ENGINE_SOURCE
         .Concat(SabberStoneCore.CardSets.Client.StandardSets.CollectibleIds.Select(SabberStoneCore.Model.Cards.FromId)
@@ -286,7 +313,7 @@ internal static class NativeUIProjection
         .Concat(LocalCardCatalog.CardStateGeneratedIds.Select(SabberStoneCore.Model.Cards.FromId))
         .Concat(LocalCardCatalog.SupplementalGeneratedIds.Select(SabberStoneCore.Model.Cards.FromId).Where(card => card != null))
         .Concat(LocalCardCatalog.LegacyGeneratedPublicIds.Select(SabberStoneCore.Model.Cards.FromId).Where(card => card != null))
-        .GroupBy(card => card.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        .GroupBy(card => card.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal));
     private static readonly HashSet<SabberStoneCore.Enums.GameTag> DefinitionTags = new HashSet<SabberStoneCore.Enums.GameTag> {
         SabberStoneCore.Enums.GameTag.COLLECTIBLE, SabberStoneCore.Enums.GameTag.CLASS,
         SabberStoneCore.Enums.GameTag.CARDTYPE, SabberStoneCore.Enums.GameTag.RARITY,
@@ -718,6 +745,8 @@ internal static class NativeUIProjection
         if (visiblePersonalCount < 0)
             throw new ArgumentOutOfRangeException(nameof(visiblePersonalCount));
         visiblePersonalCount = Math.Min(visiblePersonalCount, MaximumPersonalDecks);
+        // Classic 2014 (docs/classic-2014.md): the loaners are Violet Hold decks; a Classic save has its own Basic decks instead.
+        if (ActiveSaveMeta.IsClassic) return Array.Empty<string>();
 #if ENGINE_SOURCE
         // Installers already write "showcase"; that selector is the normal player tray too.
         if (testLoanerGroup == null || (CanonicalTestLoanerGroup(testLoanerGroup) ?? "11") == "11")
@@ -1002,8 +1031,10 @@ internal static class NativeUIProjection
     internal static int[] BoosterIdsToZero(IEnumerable<int> actorBoosterIds,
         IReadOnlyList<(int boosterId, int count)> stacks) =>
         actorBoosterIds.Except(stacks.Select(stack => stack.boosterId)).ToArray();
+    // The save's own pack types come first: a Classic save's Classic pack opens the client's booster 1, which the Legacy
+    // type also names, so Legacy only answers a booster no pack type of this save claims.
     internal static string PackTypeForBooster(int boosterId) =>
-        new[] { FairPackRules.Legacy }.Concat(FairPackRules.PackTypes)
+        FairPackRules.PackTypes.Concat(new[] { FairPackRules.Legacy })
             .FirstOrDefault(type => FairPackRules.NativeBoosterId(type) == boosterId);
     internal static bool TryProjectPackOpenability(bool probeActive, int boosterId,
         ref bool openable, ref string lockedReason)
@@ -1139,7 +1170,31 @@ internal static class NativeUIProjection
         return null;
     }
     // SoloStone plays Standard ranked and Standard Casual (#37): every other picker mode stays visible but disabled.
-    internal static bool IsDisabledFormatMode(string mode) => mode != null && mode != "STANDARD" && mode != "CASUAL";
+    // The picker mode this save plays: CLASSIC in a Classic save (docs/classic-2014.md), STANDARD otherwise. Casual stays open.
+    internal static string ActiveFormatMode => "STANDARD";
+    // Classic 2014: the 37.0 picker has no Classic button (only Standard, Wild, Casual); a Classic save's ranked entry is the
+    // Standard button, relabelled Ranked (RankedButtonMode).
+    internal static bool IsDisabledFormatMode(string mode) => mode != null && mode != ActiveFormatMode && mode != "CASUAL";
+    // Classic 2014 (owner 2026-11-24): June 2014 had no formats, only Ranked and Casual. A Classic save hides the other
+    // format buttons instead of greying them, so its picker offers ranked (the Standard button) and Casual alone.
+    internal static bool IsHiddenFormatMode(string mode) => ActiveSaveMeta.IsClassic && IsDisabledFormatMode(mode);
+    internal const string ClassicRankedLabel = "Ranked";
+    internal const string ClassicLockedClassText = "Not in Classic (June 2014)";
+    // Classic 2014: a Classic save has the nine original classes only (no Death Knight, no Demon Hunter).
+    internal static bool ClassicAllowsHeroClass(SabberStoneCore.Enums.CardClass cardClass) => !ActiveSaveMeta.IsClassic
+        || cardClass != SabberStoneCore.Enums.CardClass.DEATHKNIGHT && (int)cardClass != 14;
+    internal static bool ClassicAllowsHero(string heroId)
+    {
+        if (!ActiveSaveMeta.IsClassic || heroId == null) return true;
+        SabberStoneCore.Model.Card card;
+        try { card = SabberStoneCore.Model.Cards.FromId(heroId); } catch (KeyNotFoundException) { return false; }
+        return card != null && ClassicAllowsHeroClass(card.Class);
+    }
+    // The Play screen header of a Classic save in ranked mode; null keeps the client's header (Violet Hold, or Casual).
+    internal static string ClassicPlayHeader(bool casual) => ActiveSaveMeta.IsClassic && !casual ? "Play Ranked" : null;
+    internal const string ClassicRankedDescription = "Play Classic decks against ranked opponents and climb the ladder.";
+    // The picker button a Classic save relabels "Ranked": the Standard button, its ranked entry.
+    internal static bool RankedButtonMode(string mode) => ActiveSaveMeta.IsClassic && mode == "STANDARD";
     // The native picker's Standard/Casual choice (NativeFormatLock.StandardMode keeps it; boot restores the save's
     // LocalProfile.PrefersCasual). IN_RANKED_PLAY_MODE reads its inverse, so the client renders Casual natively.
     internal static bool CasualPlayMode;

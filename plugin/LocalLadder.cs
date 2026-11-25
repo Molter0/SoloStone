@@ -226,6 +226,13 @@ internal static class LocalLadder
 #endif
                     encounter = casual ? TryCasualEncounter(selected, out worldDeck) : TryWorldEncounter(selected, out worldDeck);
             }
+            // Classic 2014: a Classic save never falls back to the Violet Hold opponents (their cards are not Classic cards).
+            if (encounter == null && playtest == null && ActiveSaveMeta.IsClassic)
+                throw new InvalidOperationException("Classic opponents are unavailable.");
+            // A world encounter must come from the world built for this save's meta (NpcWorldBoot.EnsureForSaveMeta), never
+            // from one left over from another meta.
+            if (encounter != null && NpcWorldBoot.InstalledMeta != ActiveSaveMeta.Current)
+                throw new InvalidOperationException("The opponents of this save's meta are unavailable.");
             if (encounter != null)
             {
                 if (playtest == null) opponent = worldDeck;   // resolved and validated inside TryWorldEncounter

@@ -49,9 +49,10 @@ internal static class LocalClassRewards
     // Test seam: lets a suite switch meta without rewriting the pool policy file.
     internal static string ActiveMetaOverride;
 #if ENGINE_SOURCE
-    internal static string ActiveMeta => ActiveMetaOverride ?? OfflinePoolPolicy.Load().ActiveMetaId;
+    // A Classic save has no class reward rows of its own (docs/classic-2014.md): its meta id matches none.
+    internal static string ActiveMeta => ActiveMetaOverride ?? (ActiveSaveMeta.IsClassic ? ActiveSaveMeta.Classic : OfflinePoolPolicy.Load().ActiveMetaId);
 #else
-    internal static string ActiveMeta => ActiveMetaOverride ?? "violet-hold";
+    internal static string ActiveMeta => ActiveMetaOverride ?? ActiveSaveMeta.Current;
 #endif
     // Honored portrait ids that earlier builds granted but the mapping has since replaced (after a live check).
     // Stored honored rows stay valid with any id listed here; empty until a correction ships.
@@ -71,7 +72,7 @@ internal static class LocalClassRewards
             || (RetiredHonoredIds.TryGetValue(hero, out var retired) && retired.Contains(cardId));
     }
     internal static IEnumerable<ClassReward> ActiveRewards => Rewards.Where(row => row.Meta == ActiveMeta);
-    private static readonly Lazy<HashSet<string>> Available = new Lazy<HashSet<string>>(() =>
+    private static readonly MetaLazy<HashSet<string>> Available = new MetaLazy<HashSet<string>>(() =>
         new HashSet<string>(Cards.All.Where(card => card.Implemented && card.Collectible && LocalCardCatalog.InActiveMeta(card))
             .Select(card => card.Id).Concat(Portraits.Select(row => row.Hero).Where(id => Cards.FromId(id) != null)), StringComparer.Ordinal));
     internal static bool IsAvailable(string id) => id != null && Available.Value.Contains(id);

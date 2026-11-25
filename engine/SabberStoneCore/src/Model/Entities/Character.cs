@@ -978,6 +978,7 @@ namespace SabberStoneCore.Model.Entities
 			{
 				if (value)
 				{
+					Kettle.PowerHistory.NameSelected(this); // a selected freeze names its victim first
 					Game.TriggerManager.OnFreezeTrigger(this);
 					base[GameTag.FROZEN] = 1;
 				}

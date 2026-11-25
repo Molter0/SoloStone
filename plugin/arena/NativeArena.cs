@@ -63,6 +63,7 @@ internal static partial class NativeArena
     private static bool Offline => NativeUIProbe.Active;
     private static bool Live => NativeUIProbe.Active && !disabled;
     private static bool Inert(bool popup = true) { Notice("Arena is unavailable in this session.", popup); return false; }
+    // Classic 2014 (docs/classic-2014.md): a Classic save plays Classic Arena (DraftRules.ClassicVersion), so no meta blocks entry.
     private static bool EntryBlocked => disabled || loadFailure != null;
     // A failure anywhere in Arena disables Arena only. Every patch is gated on Offline, so the rest of the game is untouched.
     internal static void Disable(string reason, Exception error = null)

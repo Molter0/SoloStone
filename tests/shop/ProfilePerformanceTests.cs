@@ -102,7 +102,7 @@ internal static class ProfilePerformanceTests
                     throw new Exception("Synchronize must retain authoritative playsets");
         }, 50);
         // Retain the old read algorithm only as a measured reference, never as the production budget.
-        var ledger = ((Lazy<Card[]>)typeof(LocalProfile).GetField("ledgerCards", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!).Value;
+        var ledger = ((MetaLazy<Card[]>)typeof(LocalProfile).GetField("ledgerCards", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!).Value;
         long[] LinearDraftIds() => data.CustomDecks.Where(deck => LocalDecks.PlayerHeroes.Contains(deck.Hero)
             && deck.Cards.All(id => ledger.Concat(LocalDecks.CustomCards).Any(card => card.Id == id))
             && deck.Sideboards.SelectMany(row => row.Cards).All(id => LocalCardCatalog.InActiveMeta(Cards.FromId(id))))

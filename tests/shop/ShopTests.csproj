@@ -15,7 +15,7 @@
     <Compile Include="../../plugin/LocalAchievements.cs" Link="LocalAchievements.cs" />
     <Compile Include="../../plugin/LocalProfileAchievements.cs" Link="LocalProfileAchievements.cs" />
     <Compile Include="../../plugin/LocalProfileCheats.cs" />
-    <Compile Include="../../plugin/ProfileCatalog.cs" />
+    <Compile Include="../../plugin/ProfileCatalog.cs" /><Compile Include="../../plugin/ActiveSaveMeta.cs" />
     <Compile Include="../../plugin/OfflineGuard.cs" />
     <Compile Include="../../plugin/LocalClassRewards.cs" />
     <Compile Include="../../plugin/LocalEconomy.cs" Link="LocalEconomy.cs" />
@@ -63,6 +63,6 @@
     <Compile Include="../../plugin/arena/DraftRules.cs" />
     <Compile Include="../../plugin/arena/ArenaRun.cs" />
     <Compile Include="../../plugin/arena/ArenaService.cs" />
-    <EmbeddedResource Include="../../data/arena/arena-rules-v1.json" LogicalName="SoloStone.Arena.arena-rules-v1.json" />
+    <EmbeddedResource Include="../../data/arena/arena-rules-v1.json" LogicalName="SoloStone.Arena.arena-rules-v1.json" /><EmbeddedResource Include="../../data/npc/classic-decks-v1.json" LogicalName="SoloStone.Npc.classic-decks-v1.json" />
   </ItemGroup>
 </Project>

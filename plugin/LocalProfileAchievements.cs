@@ -10,7 +10,9 @@ public sealed partial class LocalProfile
 {
     internal const int AchievementCollectionRosterVersion = 1;
     private static readonly string[] AchievementExpansionRosterKeys = {
-        "EMERALD_DREAM", "THE_LOST_CITY", "TIME_TRAVEL", "CATACLYSM", "ESCAPEFROM_VIOLET_HOLD", "BE"
+        "EMERALD_DREAM", "THE_LOST_CITY", "TIME_TRAVEL", "CATACLYSM", "ESCAPEFROM_VIOLET_HOLD", "BE",
+        // Classic 2014: a Classic save's one roster, the Classic pack's set.
+        "VANILLA"
     };
     private static readonly string[] AchievementClasses = {
         "DEATHKNIGHT", "DEMONHUNTER", "DRUID", "HUNTER", "MAGE", "PALADIN",
@@ -136,7 +138,7 @@ public sealed partial class LocalProfile
         var receipt = LocalAchievementGrantReceipt.FromCatalog(id);
         next.GoldBalance = checked(next.GoldBalance + receipt.Gold);
         next.DustBalance = checked(next.DustBalance + receipt.Dust);
-        if (receipt.StandardPacks > 0) AddPacks(next, FairPackRules.Standard, receipt.StandardPacks);
+        if (receipt.StandardPacks > 0) AddPacks(next, FairPackRules.MainPackType, receipt.StandardPacks);
         if (receipt.CardBackId > 0 && !next.OwnedCardBacks.Contains(receipt.CardBackId)) next.OwnedCardBacks.Add(receipt.CardBackId);
         if (receipt.HeroSkinId != null) GrantHeroSkin(next, receipt.HeroSkinId);
         next.Achievements.Unlocks.Add(new LocalAchievementUnlock { Id = id, CatalogVersion = LocalAchievementCatalog.Version,

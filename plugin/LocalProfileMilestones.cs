@@ -9,6 +9,10 @@ public sealed partial class LocalProfile
     // Null = legacy: no Legend numbers, no Challengers, deck-named opponents. A failing seam never blocks a settlement.
     internal static Func<double, int, int?> NpcLegendNumber;            // (rating after, settled match count) -> Legend number
     internal static Func<int, double> NpcLegendTopRating;               // settled match count -> #1 field rating
+    // Save meta -> the #1 field rating of that meta's world at match 0; null = the installed world is that meta's (use
+    // NpcLegendTopRating). Creating a save of another meta than the installed world's (a Classic save from the picker,
+    // whose world is Violet Hold's) needs its own meta's top rating for Start Legend #1.
+    internal static Func<string, double?> MetaLegendTopRating;
     internal static Func<string, IReadOnlyList<string>> NpcChallengers; // milestone id -> notable NPC ids of that band
     internal static Func<string, string> NpcDisplayName;                // NPC id -> display name
 
@@ -109,7 +113,7 @@ public sealed partial class LocalProfile
                 switch (kind) {
                     case LocalTierGrantKind.Pack:
                         // match.Packs is reserved for the economy's one-pack bonus; milestone packs have their own receipt.
-                        AddPacks(next, FairPackRules.Standard, grant.Count);
+                        AddPacks(next, FairPackRules.MainPackType, grant.Count);
                         break;
                     case LocalTierGrantKind.Token:
                         switch (grant.Ref) {

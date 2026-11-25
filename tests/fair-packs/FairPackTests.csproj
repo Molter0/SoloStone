@@ -5,7 +5,7 @@
     <EmbeddedResource Include="../../data/progression/card-mastery.json" LogicalName="SoloStone.Progression.card-mastery.json" />
     <EmbeddedResource Include="golden-v2.json" LogicalName="FairPackGoldenV2.json" />
     <EmbeddedResource Include="golden-v1.json" LogicalName="FairPackGoldenV1.json" />
-    <Compile Include="../../plugin/FairPackRules.cs" Link="FairPackRules.cs" />
+    <Compile Include="../../plugin/FairPackRules.cs" Link="FairPackRules.cs" /><Compile Include="../../plugin/LocalCardCatalog.cs" Link="LocalCardCatalog.cs" /><Compile Include="../../plugin/ActiveSaveMeta.cs" Link="ActiveSaveMeta.cs" />
     <Compile Include="../shared/MiniJSON.cs" Link="MiniJSON.cs" />
   </ItemGroup>
   <PropertyGroup><DefineConstants>$(DefineConstants);ENGINE_SOURCE</DefineConstants></PropertyGroup>

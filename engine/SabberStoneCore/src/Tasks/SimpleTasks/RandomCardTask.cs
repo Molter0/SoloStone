@@ -144,7 +144,7 @@ namespace SabberStoneCore.Tasks.SimpleTasks
 				return pool.WithoutSource(matches, source);
 			}
 
-			IEnumerable<Card> cards = source.Game.FormatType == FormatType.FT_STANDARD
+			IEnumerable<Card> cards = Cards.LegacyPoolFormat(source.Game.FormatType) == FormatType.FT_STANDARD
 				? Cards.AllStandard
 				: Cards.AllWild;
 
